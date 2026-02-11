@@ -1,0 +1,29 @@
+# IntelliJ
+.idea/
+*.iml
+# OS
+.DS_Store
+Thumbs.db
+# Java / IntelliJ build output
+**/out/
+# Gradle
+**/.gradle/
+**/build/
+# Logs
+*.log
+# Node
+**/node_modules/
+**/dist/
+**/.vite/
+**/.next/
+**/.cache/
+# Python
+**/__pycache__/
+**/*.pyc
+**/.venv/
+**/venv/
+.pytest_cache/
+# Env / secrets
+.env
+.env.*
+!.env.example
