@@ -1,3 +1,7 @@
+/**
+ * @author Sam Mayfield (pickleroot)
+ */
+
 package edu.gcc.wafflehouse;
 
 public class Course {
