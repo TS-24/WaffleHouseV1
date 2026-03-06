@@ -71,3 +71,16 @@ export default defineConfig([
   },
 ])
 ```
+
+## TODOs
+
+MVP
+1. Search bar: Input Group
+2. Search results: Data table
+3. Switch between calendar and search using Tabs (line variant)
+
+Beyond
+1. Advanced search: Combobox 
+2. Progress bar for search
+3. Toast (Sonner) for successful add
+
