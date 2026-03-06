@@ -14,9 +14,11 @@ export interface CourseEvent {
 
 const DAYS = ["M", "T", "W", "R", "F"] as const
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri"] as const
-const START_HOUR = 7   // 7:00 AM
-const END_HOUR = 21   // 9:00 PM
-const HOUR_HEIGHT = 60 // pixels per hour
+const START_TIME = 7.5   // 7:30 AM
+const END_TIME = 21.5    // 9:30 PM
+const FIRST_HOUR = 8     // First whole-hour marker
+const LAST_HOUR = 21     // Last whole-hour marker (9 PM)
+const HOUR_HEIGHT = 60   // pixels per hour
 
 const COLORS = [
     "bg-blue-500/20 border-blue-500 text-blue-700 dark:text-blue-300",
@@ -49,7 +51,11 @@ interface BigCalendarProps {
 }
 
 export default function BigCalendar({ events = [] }: BigCalendarProps) {
-    const totalHours = END_HOUR - START_HOUR
+    const totalHeight = (END_TIME - START_TIME) * HOUR_HEIGHT
+    const hourMarkers = Array.from(
+        { length: LAST_HOUR - FIRST_HOUR + 1 },
+        (_, i) => FIRST_HOUR + i
+    ) // [8, 9, 10, ..., 21]
 
     return (
         <div className="flex flex-col w-full max-h-[70vh] overflow-auto">
@@ -66,35 +72,36 @@ export default function BigCalendar({ events = [] }: BigCalendarProps) {
                 ))}
             </div>
 
-            {/* Time grid */}
+            {/* Time grid (absolute positioning within fixed-height container) */}
             <div className="flex flex-1">
                 {/* Time labels */}
-                <div className="w-20 shrink-0">
-                    {Array.from({ length: totalHours + 1 }, (_, i) => {
-                        const hour = START_HOUR + i
-                        return (
-                            <div
-                                key={hour}
-                                className="pr-2 text-right text-xs text-muted-foreground/60"
-                                style={{ height: i < totalHours ? HOUR_HEIGHT : 0 }}
-                            >
-                                <span className="block -translate-y-1/2">
-                                    {i > 0 ? formatHour(hour) : ""}
-                                </span>
-                            </div>
-                        )
-                    })}
+                <div className="w-20 shrink-0 relative" style={{ height: totalHeight }}>
+                    {hourMarkers.map((hour) => (
+                        <div
+                            key={hour}
+                            className="absolute w-full pr-2 text-right text-xs text-muted-foreground/60"
+                            style={{ top: (hour - START_TIME) * HOUR_HEIGHT }}
+                        >
+                            <span className="block -translate-y-1/2">
+                                {formatHour(hour)}
+                            </span>
+                        </div>
+                    ))}
                 </div>
 
                 {/* Day columns */}
                 {DAYS.map((day) => (
-                    <div key={day} className="flex-1 border-l relative">
-                        {/* Hour grid lines */}
-                        {Array.from({ length: totalHours }, (_, i) => (
+                    <div
+                        key={day}
+                        className="flex-1 border-l relative"
+                        style={{ height: totalHeight }}
+                    >
+                        {/* Hour grid lines at whole hours */}
+                        {hourMarkers.map((hour) => (
                             <div
-                                key={i}
-                                className="border-t"
-                                style={{ height: HOUR_HEIGHT }}
+                                key={hour}
+                                className="absolute left-0 right-0 border-t"
+                                style={{ top: (hour - START_TIME) * HOUR_HEIGHT }}
                             />
                         ))}
 
@@ -104,7 +111,7 @@ export default function BigCalendar({ events = [] }: BigCalendarProps) {
                             .map((event, idx) => {
                                 const startDecimal = parseTime(event.startTime)
                                 const endDecimal = parseTime(event.endTime)
-                                const top = (startDecimal - START_HOUR) * HOUR_HEIGHT
+                                const top = (startDecimal - START_TIME) * HOUR_HEIGHT
                                 const height = (endDecimal - startDecimal) * HOUR_HEIGHT
                                 const colorIndex = hashColor(
                                     `${event.courseDepartment}${event.courseCode}`
