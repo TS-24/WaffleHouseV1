@@ -15,17 +15,19 @@ public class Driver {
         Student student = new Student();
         Schedule schedule = student.getSchedule();
 
-        Javalin app = Javalin.create(
-                // TODO: add the location of FRONTEND files to the config: (config -> { config.staticFiles.add("public"); })
-        ).start(7000);
-
-        /* COURSE REQUESTS */
+        /* TODO: Search (this doesn't work. Consider a query approach?) */
         app.get("/course", ctx -> ctx.json(search.getCourses()));
 
         // Get schedule
         app.get("/schedule", ctx -> ctx.json(schedule));
 
+        // Add course to schedule
+        app.post("/course", ctx -> {
+            Course course = ctx.bodyAsClass(Course.class);
+            schedule.addCourse(course);
         });
+
+        // TODO: Delete course from schedule
 
     }
 
