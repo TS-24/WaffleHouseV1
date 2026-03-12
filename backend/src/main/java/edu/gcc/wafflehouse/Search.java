@@ -1,26 +1,69 @@
 package edu.gcc.wafflehouse;
+
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
+/**
+ * Fake database, search function, cached search results, filter functions
+ * @author TODO
+ */
 public class Search {
-    private ArrayList<Course> courses;
-    private ArrayList<Course> results;
-    private ArrayList<Filter> filters;
-    private String query;
-    private FilterName filtername;
+    private ArrayList<Course> courses;  // temporary db
+    private ArrayList<Course> results;  // results from searching the query; "cache"
 
-    public enum FilterName {
-        Professor, Department, Timeslot, Credits;
+    // Filters: Hardcoded one-by-one so we have easy access to each type of filter (not all in one list w/o clear order)
+    public CourseNameFilter nameFilter;
+    public ProfessorFilter profFilter;
+    public DepartmentFilter deptFilter;
+    public TimeFilter timeFilter;
+    public CreditHourFilter credFilter;
+
+    /**
+     * Search the database for matching courses
+     * @param query user input
+     * @return courses with at least one field matching the entire query
+     */
+    public ArrayList<Course> search(String query) {
+        ArrayList<Course> results = new ArrayList<>();
+
+        // TODO: search through each field of each course in the db and try to match query and save results to this.results
+        // This might look like, hardcoding a str.contains for every field of a course
+        // This should return all the results that matches from at least one (NOT all) of the filters
+        // I.e., this is a OR, not AND gate, as opposed to getFilteredResults
+
+        this.results = results;
+        return results;
     }
 
+    /**
+     * Apply the filters one-by-one, using a predicate approach
+     * @return filtered results
+     */
     public ArrayList<Course> getFilteredResults() {
-        return null;
+        return (ArrayList<Course>) results.stream()
+                .filter(course -> nameFilter.matches(course))
+                .filter(course -> profFilter.matches(course))
+                // TODO: uncomment deptFilter once it's implemented
+//                    .filter(course -> deptFilter.matches(course))
+                .filter(course -> timeFilter.matches(course))
+                .filter(course -> credFilter.matches(course))
+                .collect(Collectors.toList());
     }
 
+
+    /**
+     * Mostly for testing
+     * @return
+     */
     public ArrayList<Course> getResults() {
         return results;
     }
 
+    /**
+     * Mostly for testing
+     * @return
+     */
     public ArrayList<Course> getCourses() {
         return courses;
     }
