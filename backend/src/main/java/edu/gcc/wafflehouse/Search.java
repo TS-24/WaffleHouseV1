@@ -1,26 +1,60 @@
 package edu.gcc.wafflehouse;
+
 import java.time.LocalTime;
 import java.util.ArrayList;
 
 public class Search {
-    private ArrayList<Course> courses;
-    private ArrayList<Course> results;
-    private ArrayList<Filter> filters;
-    private String query;
-    private FilterName filtername;
+    private ArrayList<Course> courses;  // temporary db
+    private ArrayList<Course> results;  // results from searching the query; "cache"
 
-    public enum FilterName {
-        Professor, Department, Timeslot, Credits;
+    // Filters: Hardcoded one-by-one so we have easy access to each type of filter (not all in one list w/o clear order)
+    public CourseNameFilter nameFilter;
+    public ProfessorFilter profFilter;
+    public DepartmentFilter deptFilter;
+    public TimeFilter timeFilter;
+    public CreditHourFilter credFilter;
+
+    /**
+     * Search the database for matching courses
+     * @param query user input
+     * @return courses with at least one field matching the entire query
+     */
+    public ArrayList<Course> search(String query) {
+        ArrayList<Course> results = new ArrayList<>();
+
+        for (Course course : courses) {
+            // TODO: search through each field of each course and try to match query and save results to this.results
+            // This might look like, hardcoding a str.contains for every field of a course
+            continue;
+        }
+
+        this.results = results;
+        return results;
     }
 
     public ArrayList<Course> getFilteredResults() {
-        return null;
+        ArrayList<Course> filteredResults = results;
+
+        // Apply the filters one-by-one
+        filteredResults = nameFilter.apply(filteredResults);
+        filteredResults = profFilter.apply(filteredResults);
+        // TODO: finish the list
+
+        return filteredResults;
     }
 
+    /**
+     * Mostly for testing
+     * @return
+     */
     public ArrayList<Course> getResults() {
         return results;
     }
 
+    /**
+     * Mostly for testing
+     * @return
+     */
     public ArrayList<Course> getCourses() {
         return courses;
     }
