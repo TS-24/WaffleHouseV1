@@ -29,6 +29,10 @@ public class Schedule {
         courses.add(c);
     }
 
+    public void removeCourse(Course c) {
+        courses.remove(c);
+    }
+  
     public void saveSchedule() {
         try (FileWriter quill = new FileWriter("../../resources/schedule.csv")) {
             quill.write("Course ID\n");
