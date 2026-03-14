@@ -20,6 +20,23 @@ public class Search {
     public CreditHourFilter credFilter;
 
     /**
+     * Initialize the fake database, cached results, and filters
+     */
+    public Search() {
+        this.courses = new ArrayList<>();
+        this.results = new ArrayList<>();
+
+        // Initialize filters with null input (null = no filtering)
+        this.nameFilter = new CourseNameFilter(null);
+        this.profFilter = new ProfessorFilter(null);
+        this.timeFilter = new TimeFilter(null);
+        this.credFilter = new CreditHourFilter(null);
+
+        // Populate with test data
+        AddTestCourses();
+    }
+
+    /**
      * Search the database for matching courses
      * @param query user input
      * @return courses with at least one field matching the entire query
@@ -33,7 +50,8 @@ public class Search {
         // I.e., this is a OR, not AND gate, as opposed to getFilteredResults
 
         this.results = results;
-        return results;
+//        return results;
+        return courses;
     }
 
     /**
@@ -94,6 +112,7 @@ public class Search {
                 1,
                 csTimes
         );
+        courses.add(cs101);
 
         ArrayList<Timeslot> mathTimes = new ArrayList<>();
         mathTimes.add(new Timeslot('T', LocalTime.of(11, 0), LocalTime.of(12, 15)));
@@ -110,6 +129,7 @@ public class Search {
                 1,
                 mathTimes
         );
+        courses.add(math201);
 
         ArrayList<Timeslot> histTimes = new ArrayList<>();
         histTimes.add(new Timeslot('M', LocalTime.of(14, 0), LocalTime.of(15, 15)));
@@ -126,5 +146,6 @@ public class Search {
                 1,
                 histTimes
         );
+        courses.add(hist150);
 
     }}

@@ -1,6 +1,8 @@
 package edu.gcc.wafflehouse;
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.javalin.Javalin;
+import io.javalin.json.JavalinJackson;
 
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
@@ -13,18 +15,30 @@ import io.javalin.Javalin;
 public class Main {
     public static void main(String[] args) {
         Javalin app = Javalin.create(config -> {
-            // Serve static files from src/main/resources/public
-            config.staticFiles.add("public");
-
             // Enable CORS (allow requests from React dev server)
             config.bundledPlugins.enableCors(cors -> {
                 cors.addRule(it -> {
                     it.allowHost("http://localhost:5173");
                 });
             });
-        }).start(7000);
+
+            // Register Jackson module for Java 8 time types (LocalTime, etc.)
+            config.jsonMapper(new JavalinJackson().updateMapper(mapper -> {
+                mapper.registerModule(new JavaTimeModule());
+            }));
+        });
+
+        // Log exceptions to help with debugging
+        app.exception(Exception.class, (e, ctx) -> {
+            e.printStackTrace();
+            ctx.status(500);
+            ctx.result("Error: " + e.getClass().getName() + " - " + e.getMessage());
+        });
 
         Driver.registerRoutes(app);
+
+        // Start after we register routes, in case registering throws errors
+        app.start(7001);
     }
 }
 
