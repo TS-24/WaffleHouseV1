@@ -1,36 +1,41 @@
 package edu.gcc.wafflehouse;
 
 import java.time.LocalTime;
-import java.util.ArrayList;
 
 /**
+ * Filter by day of the week, earliest start time, and latest end time
  * @author Ina Tang
  */
-public class TimeFilter extends Filter<Timeslot> {
+public class TimeFilter extends Filter {
+
+    /**
+     * Initialize timeslot
+     * @param timeslot Day of the week, earliest start time, latest end time
+     */
+    public TimeFilter(Timeslot timeslot) {
+        super(timeslot);
+    }
+
     /**
      * Filter by timeslot
-     * @param courses What you expect
-     * @param timeslot Day of the week, earliest start time, latest end time
-     * @return Courses that **contains** a timeslot that sits inside the given timeslot
+     * @param course What you expect
+     * @return true if course **contains** a timeslot that sits inside the given timeslot
      */
     @Override
-    public ArrayList<Course> apply(ArrayList<Course> courses, Timeslot timeslot) {
-        ArrayList<Course> matchingCourses = new ArrayList<>();
-        for (Course course : courses) {
-            for (Timeslot ts : course.getTimes()) {
-                // If the course has a slot on one of the desired day of the week
-                if (ts.getDay() == timeslot.getDay()) {
-                    // If that slot is in between the desired start and end time
-                    LocalTime desiredStart = timeslot.getStartTime();
-                    LocalTime desiredEnd = timeslot.getEndTime();
-                    if (!ts.getStartTime().isAfter(desiredStart) &&
-                            !ts.getEndTime().isBefore(desiredEnd)) {
-                        matchingCourses.add(course);
-                        break;
-                    }
+    public boolean apply(Course course) {
+        Timeslot thisTs = (Timeslot) getInput();
+        for (Timeslot ts : course.getTimes()) {
+            // If the course has a slot on one of the desired day of the week
+            if (ts.getDay() == thisTs.getDay()) {
+                // If that slot is in between the desired start and end time
+                LocalTime desiredStart = thisTs.getStartTime();
+                LocalTime desiredEnd = thisTs.getEndTime();
+                if (!ts.getStartTime().isAfter(desiredStart) &&
+                        !ts.getEndTime().isBefore(desiredEnd)) {
+                    return true;
                 }
             }
         }
-        return matchingCourses;
+        return false;
     }
 }
