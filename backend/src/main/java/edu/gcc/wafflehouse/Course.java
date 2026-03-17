@@ -31,6 +31,7 @@ public class Course {
     private int semester;
     private long id;
     private ArrayList<Timeslot> times;
+    private int currentEnrollment;
 
     public Course(String name, int code, String department, Professor prof, int creditHours, int capacity, int year, int semester, ArrayList<Timeslot> times) {
         this.name = name;
@@ -42,6 +43,7 @@ public class Course {
         this.year = year;
         this.semester = semester;
         this.times = times;
+        this.currentEnrollment = 0;
         this.id = nextId++;
     }
 
@@ -79,6 +81,10 @@ public class Course {
 
     public ArrayList<Timeslot> getTimes() {
         return times;
+    }
+
+    public int getCurrentEnrollment() {
+        return currentEnrollment;
     }
 
     public long getId() {
