@@ -1,14 +1,16 @@
 package edu.gcc.wafflehouse;
 
 import java.util.ArrayList;
-import java.io.FileWriter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.io.File;
 
 /**
  * Interface for organizing courses / wrapper class for ArrayList of Courses
  * @author Ina Tang
  */
 public class Schedule {
+
     private ArrayList<Course> courses;
 
     // Constructors
@@ -33,14 +35,13 @@ public class Schedule {
         courses.remove(c);
     }
   
-    public void saveSchedule() {
-        try (FileWriter quill = new FileWriter("../../resources/schedule.csv")) {
-            quill.write("Course ID\n");
-            for (Course c : courses) {
-                quill.write(c.getId() + "\n");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void saveSchedule() throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.writeValue(new File("../../resources/schedule.csv"), courses);
+    }
+
+    public Schedule loadSchedule() throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(new File("../../resources/schedule.csv"), Schedule.class);
     }
 }
