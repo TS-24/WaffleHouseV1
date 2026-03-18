@@ -120,9 +120,9 @@ export default function FilterGroup({className}: React.ComponentProps<"div">) {
 
         {/* Start and end time: RangeInput */}
         <Field>
-            <FieldLabel htmlFor="start_time">Time range</FieldLabel>
-            <Input id="start_time" name="start-time" type="time" min="08:00" max="21:00" step="900"/>
-            <Input id="end_time" name="end-time" type="time" min="08:00" max="21:00" step="900"/>
+            <FieldLabel htmlFor="start-time">Time range</FieldLabel>
+            <Input id="start-time" name="start-time" type="time" min="08:00" max="21:00" step="900"/>
+            <Input id="end-time" name="end-time" type="time" min="08:00" max="21:00" step="900"/>
             {/*}<RangeInput id="time"
                         minDefaultValue="08:00" maxDefaultValue="21:00"
                         type="time" min="08:00" max="21:00" step="900"
