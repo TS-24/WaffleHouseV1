@@ -38,4 +38,9 @@ public class Timeslot {
     public LocalTime getend_time() {
         return end_time;
     }
+
+    public String toString() {
+        return day + " " + start_time.toString() + " " + end_time.toString();
+
+    }
 }
