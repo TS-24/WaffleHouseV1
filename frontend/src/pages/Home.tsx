@@ -1,27 +1,16 @@
-import { useState, useRef, useEffect, useMemo } from "react"
-import type { ColumnDef } from "@tanstack/react-table"
+import { useState, useRef, useMemo } from "react"
+import type { ColumnDef } from "@tanstack/react-table"  // use "import type" when what you're importing is a TS-only type
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import BigCalendar from "@/components/BigCalendar"
 import { DataTable } from "@/components/DataTable"
 import Footer from "@/components/Footer.tsx"
+import type { Mode, Course } from "@/lib/types"         // same here
 import { cn } from "@/lib/utils"
 import * as React from "react";
+import SearchCalendarBar from "@/components/SearchCalendarBar.tsx";
 import FilterGroup from "@/components/FilterGroup.tsx";
 
-
-interface Course {
-    id: number
-    name: string
-    code: number
-    section: string
-    department: string
-    professor: string
-    creditHours: number
-    year: number
-    semester: number
-    times: Date[]
-};
 
 // TODO: Update columns to match actual API response fields
 // const columns: ColumnDef<Course>[] = [
@@ -53,42 +42,12 @@ const QUOTES = [
     { text: "An educated mind is one that can entertain a thought without accepting it.", author: "Aristotle" },
 ]
 
-type Mode = "search" | "calendar"
-
 export default function Home() {
-    const [mode, setMode] = useState<Mode>("search")
-    const [query, setQuery] = useState("")
     const [results, setResults] = useState<Course[]>([])
     const [hasSearched, setHasSearched] = useState(false)
-    const inputRef = useRef<HTMLInputElement>(null)
+    const [mode, setMode] = useState<Mode>("search")
     const filterFormRef = useRef<HTMLFormElement>(null)
     const quote = useMemo(() => QUOTES[Math.floor(Math.random() * QUOTES.length)], [])
-
-    // Focus input when switching to search mode
-    useEffect(() => {
-        if (mode === "search") {
-            const timer = setTimeout(() => inputRef.current?.focus(), 50)
-            return () => clearTimeout(timer)
-        }
-    }, [mode])
-
-    const handleSearch = async (e: React.SubmitEvent) => {
-        e.preventDefault();
-        if (!query.trim()) return;
-
-        try {
-            const res = await fetch(`http://localhost:7001/search?q=${query}`);
-            if (!res.ok) {
-                console.error(`Search failed: ${res.status} ${res.statusText}`);
-                return;
-            }
-            const searchRes: Course[] = await res.json();
-            setResults(searchRes);
-            setHasSearched(true);
-        } catch (err) {
-            console.error("Search error:", err);
-        }
-    }
 
     const submitFilters = async () => {
         if (!filterFormRef.current) return;
@@ -133,107 +92,9 @@ export default function Home() {
         <div className="min-h-screen flex flex-col bg-background">
             {/* Header */}
             <header className="relative h-16 flex items-center px-6">
-                {/* Centered morphing nav — always rendered, animated */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <form
-                        onSubmit={handleSearch}
-                        className="pointer-events-auto mt-10"
-                    >
-                        {/*
-                          Single container with border-b-2.
-                          The underline shrinks/grows as content inside transitions.
-                        */}
-                        <div
-                            className={cn(
-                                "flex items-center border-b-2 transition-all duration-300 ease-in-out",
-                                mode === "search"
-                                    ? "border-muted-foreground/30 focus-within:border-foreground"
-                                    : "border-muted-foreground/30"
-                            )}
-                        >
-                            {/*
-                              "Search" text label — visible in calendar mode.
-                              In search mode it collapses to width 0 and fades out.
-                            */}
-                            <div
-                                className={cn(
-                                    "overflow-hidden transition-all duration-300 ease-in-out",
-                                    mode === "calendar"
-                                        ? "max-w-24 opacity-100"
-                                        : "max-w-0 opacity-0"
-                                )}
-                            >
-                                <button
-                                    type="button"
-                                    onClick={() => setMode("search")}
-                                    className={cn(
-                                        "text-sm font-medium pb-1 whitespace-nowrap",
-                                        "text-muted-foreground hover:text-foreground",
-                                        "cursor-pointer transition-colors duration-200"
-                                    )}
-                                >
-                                    Search
-                                </button>
-                            </div>
 
-                            {/*
-                              Search input — visible in search mode.
-                              In calendar mode it collapses to width 0 and fades out.
-                            */}
-                            {/* TODO: Disable search bar after search. Add button for "New search" */}
-                            <div
-                                className={cn(
-                                    "overflow-hidden transition-all duration-300 ease-in-out",
-                                    mode === "search"
-                                        ? "w-80 opacity-100"
-                                        : "w-0 opacity-0"
-                                )}
-                            >
-                                <input
-                                    ref={inputRef}
-                                    type="search"
-                                    placeholder="Search courses..."
-                                    value={query}
-                                    onChange={(e) => setQuery(e.target.value)}
-                                    className={cn(
-                                        "w-80 bg-transparent border-0 outline-none",
-                                        "text-sm py-1 px-1",
-                                        "placeholder:text-muted-foreground/50",
-                                        "[&::-webkit-search-cancel-button]:appearance-none"
-                                    )}
-                                />
-                            </div>
-
-                            {/* Animated spacer */}
-                            <div
-                                className={cn(
-                                    "transition-all duration-300 ease-in-out",
-                                    mode === "calendar" ? "w-6" : "w-4"
-                                )}
-                            />
-
-                            {/*
-                              "Calendar" button — always visible.
-                              Color changes based on mode.
-                            */}
-                            <button
-                                type="button"
-                                onClick={() => setMode("calendar")}
-                                className={cn(
-                                    "text-sm font-medium pb-1 whitespace-nowrap",
-                                    "transition-colors duration-300 ease-in-out",
-                                    mode === "calendar"
-                                        ? "text-red-600 dark:text-red-400 cursor-default"
-                                        : "text-muted-foreground hover:text-foreground cursor-pointer"
-                                )}
-                            >
-                                Calendar
-                            </button>
-                        </div>
-
-                        <button type="submit" hidden />
-                    </form>
-                </div>
+                {/* Search Bar, with Calendar Button */}
+                <SearchCalendarBar hasSearched={hasSearched} setHasSearched={setHasSearched} setResults={setResults} mode={mode} setMode={setMode} />
 
                 {/* Avatar (always visible, right-aligned) */}
                 <div className="ml-auto">
