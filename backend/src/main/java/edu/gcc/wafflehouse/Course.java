@@ -91,7 +91,7 @@ public class Course {
         return currentEnrollment;
     }
 
-    public long getId() {
+    public long getID() {
         return id;
     }
 
