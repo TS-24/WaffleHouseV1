@@ -2,6 +2,9 @@ package edu.gcc.wafflehouse;
 
 public class Professor extends Profile {
 
+    // For Jackson deserialization
+    public Professor() {}
+
     public Professor(String name) {
         super();
         // Parse "Dr. Smith" style names into first/last

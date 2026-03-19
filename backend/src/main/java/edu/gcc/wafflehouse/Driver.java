@@ -18,7 +18,6 @@ public class Driver {
         // Create objects for student and schedule
         Student student = new Student();
         Schedule schedule = student.getSchedule();
-        ArrayList<Course> courses = schedule.getCourses();
 
         // Search database
         app.get("/search", ctx -> {
@@ -61,7 +60,7 @@ public class Driver {
         });
 
         // Get (courses in user's) schedule
-        app.get("/schedule", ctx -> ctx.json(courses));
+        app.get("/schedule", ctx -> ctx.json(schedule.getCourses()));
 
         // Get course (for viewing course info)
         app.get("/course", ctx -> {
@@ -73,14 +72,14 @@ public class Driver {
         app.post("/course", ctx -> {
             Course course = ctx.bodyAsClass(Course.class);
             schedule.addCourse(course);
-            ctx.json(courses);  // return updated schedule
+            ctx.json(schedule.getCourses());  // return updated schedule
         });
 
         // Remove course from schedule
         app.delete("/course", ctx -> {
             Course course = ctx.bodyAsClass(Course.class);
             schedule.removeCourse(course);
-            ctx.json(courses);  // return updated schedule
+            ctx.json(schedule.getCourses());  // return updated schedule
         });
     }
 

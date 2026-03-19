@@ -1,20 +1,6 @@
-/**
- * @author Sam Mayfield (pickleroot)
- */
-
 package edu.gcc.wafflehouse;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
-import java.io.FileReader;
-import java.lang.reflect.Type;
-import java.time.DateTimeException;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 public class Course {
@@ -36,6 +22,9 @@ public class Course {
 
     private ArrayList<Timeslot> times;
     private int currentEnrollment;
+
+    // For Jackson deserialization
+    public Course() {}
 
     public Course(String name, int code, char section, String department, ArrayList<String> faculty, int creditHours, int capacity, String semester, ArrayList<Timeslot> times) {
         this.name = name;

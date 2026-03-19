@@ -7,8 +7,9 @@ public class Timeslot {
     private LocalTime start_time;
     private LocalTime end_time;
 
-
+    // For Jackson deserialization
     public Timeslot() {}
+
     public Timeslot(char day, LocalTime start_time, LocalTime end_time) {
         this.day = day;
         this.start_time = start_time;
