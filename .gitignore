@@ -29,3 +29,4 @@ Thumbs.db
 !.env.example
 # AI
 AGENTS.md
+/frontend/package-lock.json
