@@ -45,10 +45,10 @@ public class Driver {
             //       b/c we need 1-1 correspondence btw data and the specific filter
 
             // Set all inputs for the filters
+            search.semeFilter.setInput(req.semester);
             search.nameFilter.setInput(req.name);
             search.profFilter.setInput(req.prof);
-            // TODO: uncomment this after deptFilter is implemented
-//            search.deptFilter.setInput(req.dept);
+            search.deptFilter.setInput(req.dept);
             search.timeFilter.setInput(req.time);
             search.credFilter.setInput(req.credits);
 

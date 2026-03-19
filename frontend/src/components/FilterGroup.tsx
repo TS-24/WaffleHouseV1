@@ -1,40 +1,35 @@
+/**
+ * Where all the filter logic and updates to backend happens
+ * @author Ina Tang
+ */
+
 import { Input } from "@/components/ui/input"
-import RangeInput from "@/components/RangeInput.tsx";
-import {
-    Combobox, ComboboxChip, ComboboxChips, ComboboxChipsInput,
-    ComboboxContent,
-    ComboboxEmpty,
-    ComboboxInput,
-    ComboboxItem,
-    ComboboxList, ComboboxValue, useComboboxAnchor,
-} from "@/components/ui/combobox"
-import {Field, FieldGroup, FieldLabel} from "@/components/ui/field.tsx";
+// import RangeInput from "@/components/RangeInput.tsx";
+// import {
+//     Combobox, ComboboxChip, ComboboxChips, ComboboxChipsInput,
+//     ComboboxContent,
+//     ComboboxEmpty,
+//     ComboboxInput,
+//     ComboboxItem,
+//     ComboboxList, ComboboxValue, useComboboxAnchor,
+// } from "@/components/ui/combobox"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field.tsx";
 import React from "react"
 import { cn } from "@/lib/utils"
-import {Toggle} from "@/components/ui/toggle.tsx";
+import { Toggle } from "@/components/ui/toggle.tsx";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 
-// TODO QUESTION: Do we do parsing and filtering here, or do we have to call the API again? (then maybe intersect the results?)
-// TODO QUESTION: Should I make the filters a sidebar? I think yes since there's so many fields...
 
-// TODO: replace these with API calls
-const departments = [
-    "ACCT",
-    "COMP",
-    "MATH",
-    "HUMA",
-    "ENGL",
-] as const
+// TODO: Make FilterGroup a Sidebar
+// TODO: Make Semester, Department, and Professor Comboboxes
+// TODO: Make Credit, Time RangeInputs
 
-const professors = [
-    "Jon Hutchins",
-    "Brian Dickinson",
-    "Britton Wolfe"
-] as const
 
-const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] as const
+// const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] as const
 
 export default function FilterGroup({className}: React.ComponentProps<"div">) {
-    const weekAnchor = useComboboxAnchor()
+    // Create a ComboboxAnchor for each Combobox that support multi-select
+//     const weekAnchor = useComboboxAnchor()
 //     const profAnchor = useComboboxAnchor()
 
     return (
@@ -47,12 +42,11 @@ export default function FilterGroup({className}: React.ComponentProps<"div">) {
             </Toggle>
         </Field> */}
 
-        {/* TODO: Semester */}
-
-        {/* Department: Single select */}
+        {/* Semester. TODO: Combobox */}
         <Field>
-            <FieldLabel htmlFor="department">Department</FieldLabel>
-            <Combobox items={departments}>
+            <FieldLabel htmlFor="semester">Semester</FieldLabel>
+            <Input id="semester" name="semester" placeholder="2024_Fall, 2023_Winter_Online" />
+            {/* <Combobox items={departments}>
                 <ComboboxInput id="department" name="dept" placeholder="Department" showClear />
                 <ComboboxContent>
                     <ComboboxEmpty>No department found.</ComboboxEmpty>
@@ -64,7 +58,26 @@ export default function FilterGroup({className}: React.ComponentProps<"div">) {
                         )}
                     </ComboboxList>
                 </ComboboxContent>
-            </Combobox>
+            </Combobox> */}
+        </Field>
+
+        {/* Department: Single select */}
+        <Field>
+            <FieldLabel htmlFor="department">Department</FieldLabel>
+            <Input id="department" name="dept" placeholder="Department" />
+            {/* <Combobox items={departments}>
+                <ComboboxInput id="department" name="dept" placeholder="Department" showClear />
+                <ComboboxContent>
+                    <ComboboxEmpty>No department found.</ComboboxEmpty>
+                    <ComboboxList>
+                        {(item) => (
+                            <ComboboxItem key={item} value={item}>
+                                {item}
+                            </ComboboxItem>
+                        )}
+                    </ComboboxList>
+                </ComboboxContent>
+            </Combobox> */}
         </Field>
 
         {/* Course name: Text input */}
@@ -85,10 +98,18 @@ export default function FilterGroup({className}: React.ComponentProps<"div">) {
         </Field>
 
 
-        {/* Days of the week: Multiselect */}
+        {/* Days of the week. TODO: Multiselect */}
         <Field>
-            <FieldLabel htmlFor="days-of-week">Days of the week</FieldLabel>
-            <Combobox
+            <FieldLabel htmlFor="day-of-week">Days of the week</FieldLabel>
+            <NativeSelect id="day-of-week" name="day-of-week">
+                <NativeSelectOption value="">Select a day...</NativeSelectOption>
+                <NativeSelectOption value="M">Monday</NativeSelectOption>
+                <NativeSelectOption value="T">Tuesday</NativeSelectOption>
+                <NativeSelectOption value="W">Wednesday</NativeSelectOption>
+                <NativeSelectOption value="R">Thursday</NativeSelectOption>
+                <NativeSelectOption value="F">Friday</NativeSelectOption>
+            </NativeSelect>
+            {/* <Combobox
                 multiple
                 autoHighlight
                 items={daysOfWeek}
@@ -115,7 +136,7 @@ export default function FilterGroup({className}: React.ComponentProps<"div">) {
                         )}
                     </ComboboxList>
                 </ComboboxContent>
-            </Combobox>
+            </Combobox> */}
         </Field>
 
         {/* Start and end time: RangeInput */}
@@ -130,10 +151,11 @@ export default function FilterGroup({className}: React.ComponentProps<"div">) {
         </Field>
         {/*    TODO: make sure Time range has a sufficient min width for showing AM/PM info*/}
 
-        {/* Professor: Multiselect */}
+        {/* Professor. TODO: Multiselect */}
         <Field>
             <FieldLabel htmlFor="professor">Professor</FieldLabel>
-            <Combobox items={professors}>
+            <Input id="professor" name="prof" placeholder="Hutchins, Jon, or..." />
+            {/* <Combobox items={professors}>
                 <ComboboxInput id="professor" name="prof" placeholder="Professor" showClear />
                 <ComboboxContent>
                     <ComboboxEmpty>No professor found.</ComboboxEmpty>
@@ -145,7 +167,7 @@ export default function FilterGroup({className}: React.ComponentProps<"div">) {
                         )}
                     </ComboboxList>
                 </ComboboxContent>
-            </Combobox>
+            </Combobox> */}
 
             {/*<Combobox
                 multiple
@@ -176,8 +198,6 @@ export default function FilterGroup({className}: React.ComponentProps<"div">) {
                 </ComboboxContent>
             </Combobox>*/}
         </Field>
-
-        {/* TODO: Semester */}
         </FieldGroup>
     )
 }

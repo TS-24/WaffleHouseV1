@@ -16,6 +16,6 @@ public class CreditHourFilter extends Filter {
      */
     @Override
     protected boolean apply(Course course) {
-        return course.getCreditHours() == (int) getInput();
+        return course.getCreditHours() == Integer.parseInt((String) getInput());
     }
 }

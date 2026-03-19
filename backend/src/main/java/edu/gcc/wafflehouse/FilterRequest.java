@@ -8,7 +8,8 @@ public class FilterRequest {
     public String name;
     public String prof;
     public String dept;
-    public String time;
+    public Timeslot time;
     public String credits;
+    public String semester;
     // All fields are nullable — null means "don't filter on this"
 }
