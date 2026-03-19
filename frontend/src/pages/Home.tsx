@@ -61,14 +61,21 @@ export default function Home() {
     const [hasSearched, setHasSearched] = useState(false)
     const [mode, setMode] = useState<Mode>("search")
     const [events, setEvents] = useState<CourseEvent[]>([])
+    const [schedule, setSchedule] = useState<any[]>([])
     const filterFormRef = useRef<HTMLFormElement>(null)
     const quote = useMemo(() => QUOTES[Math.floor(Math.random() * QUOTES.length)], [])
+
+    /** Update both raw schedule and transformed calendar events at once */
+    const updateSchedule = (data: any[]) => {
+        setSchedule(data);
+        setEvents(toEvents(data));
+    };
 
     // Fetch schedule on mount
     useEffect(() => {
         fetch("http://localhost:7001/schedule")
             .then((res) => res.json())
-            .then((data) => setEvents(toEvents(data)))
+            .then((data) => updateSchedule(data))
             .catch((err) => console.error("Failed to fetch schedule:", err));
     }, []);
 
@@ -131,16 +138,79 @@ export default function Home() {
                                     return;
                                 }
                                 const data = await res.json();
-                                console.log("Course added successfully. Schedule:", data);
-                                const newEvents = toEvents(data);
-                                console.log("Calendar events:", newEvents);
-                                setEvents(newEvents);
+                                console.log("Course added successfully:", course.name);
+                                updateSchedule(data);
                             } catch (err) {
                                 console.error("Error adding course:", err);
                             }
                         }}
                     >
                         Add
+                    </Button>
+                );
+            },
+        },
+    ];
+
+    // Columns for the schedule table (shown below calendar)
+    const scheduleColumns: ColumnDef<any>[] = [
+        { accessorKey: "department", header: "Dept" },
+        { accessorKey: "code", header: "Code" },
+        { accessorKey: "section", header: "Section" },
+        { accessorKey: "name", header: "Course name" },
+        {
+            id: "professor",
+            header: "Professor",
+            cell: ({ row }) => {
+                const faculty = row.original.faculty;
+                if (!Array.isArray(faculty)) return null;
+                return faculty.map((p: any) => `${p.firstName ?? ""} ${p.lastName ?? ""}`.trim()).join(", ");
+            },
+        },
+        {
+            id: "time",
+            header: "Days & Time",
+            cell: ({ row }) => {
+                const times = row.original.times;
+                if (!Array.isArray(times)) return null;
+                return times.map((t: any) => {
+                    const day = String(t.day);
+                    const start = Array.isArray(t.start_time) ? formatTime(t.start_time) : String(t.start_time);
+                    const end = Array.isArray(t.end_time) ? formatTime(t.end_time) : String(t.end_time);
+                    return `${day} ${start} ${end}`;
+                }).join(", ");
+            },
+        },
+        {
+            id: "remove",
+            header: "",
+            cell: ({ row }) => {
+                const course = row.original;
+                return (
+                    <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={async () => {
+                            try {
+                                const res = await fetch("http://localhost:7001/course", {
+                                    method: "DELETE",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify(course),
+                                });
+                                if (!res.ok) {
+                                    const body = await res.text();
+                                    console.error(`Failed to remove course: ${res.status} ${res.statusText}`, body);
+                                    return;
+                                }
+                                const data = await res.json();
+                                console.log("Course removed successfully:", course.name);
+                                updateSchedule(data);
+                            } catch (err) {
+                                console.error("Error removing course:", err);
+                            }
+                        }}
+                    >
+                        Remove
                     </Button>
                 );
             },
@@ -252,9 +322,16 @@ export default function Home() {
 
                 {/* Calendar */}
                 {mode === "calendar" && (
-                    <div className="flex-1 flex items-center justify-center max-w-2/3">
+                    <div className="flex-1 flex flex-col items-center max-w-2/3 mt-8">
                         <BigCalendar events={events} />
 
+                        {/* Schedule list with remove buttons */}
+                        {schedule.length > 0 && (
+                            <div className="w-full max-w-4xl mx-auto mt-8">
+                                <h2 className="text-lg font-semibold mb-3">My Schedule</h2>
+                                <DataTable columns={scheduleColumns} data={schedule} />
+                            </div>
+                        )}
                     </div>
                 )}
             </main>

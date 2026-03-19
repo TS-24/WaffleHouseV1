@@ -32,7 +32,7 @@ public class Schedule {
     }
 
     public void removeCourse(Course c) {
-        courses.remove(c);
+        courses.removeIf(course -> course.getID() == c.getID());
     }
 
     // This should work.
