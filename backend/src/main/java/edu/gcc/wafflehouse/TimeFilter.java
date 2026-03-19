@@ -24,17 +24,25 @@ public class TimeFilter extends Filter {
     @Override
     public boolean apply(Course course) {
         Timeslot thisTs = (Timeslot) getInput();
+        char desiredDay = thisTs.getDay();
+        LocalTime desiredStart = thisTs.getstart_time();
+        LocalTime desiredEnd = thisTs.getend_time();
+
         for (Timeslot ts : course.getTimes()) {
-            // If the course has a slot on one of the desired day of the week
-            if (ts.getDay() == thisTs.getDay()) {
-                // If that slot is in between the desired start and end time
-                LocalTime desiredStart = thisTs.getstart_time();
-                LocalTime desiredEnd = thisTs.getend_time();
-                if (!ts.getstart_time().isAfter(desiredStart) &&
-                        !ts.getend_time().isBefore(desiredEnd)) {
-                    return true;
-                }
+            // If day filter is set, check that the course has a slot on that day
+            boolean dayMatches = (desiredDay == '\0') || (ts.getDay() == desiredDay);
+            if (!dayMatches) continue;
+
+            // If time range is set, check that the slot fits within it
+            boolean timeMatches = true;
+            if (desiredStart != null && ts.getstart_time().isBefore(desiredStart)) {
+                timeMatches = false;
             }
+            if (desiredEnd != null && ts.getend_time().isAfter(desiredEnd)) {
+                timeMatches = false;
+            }
+
+            if (dayMatches && timeMatches) return true;
         }
         return false;
     }

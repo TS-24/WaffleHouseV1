@@ -19,6 +19,7 @@ import FilterGroup from "@/components/FilterGroup.tsx";
 //     { accessorKey: "description", header: "Description" },
 // ]
 
+// Columns / headers for table of search results
 const columns: ColumnDef<Course>[] = [
     { accessorKey: "department", header: "Department" },
     { accessorKey: "code", header: "Course code" },
@@ -58,12 +59,27 @@ export default function Home() {
             return val && String(val).trim() ? String(val).trim() : null;
         };
 
+        // Build time filter object from start-time, end-time, and day-of-week fields
+        const startTime = getString("start-time");
+        const endTime = getString("end-time");
+        const day = getString("day-of-week");
+
+        let time: Record<string, unknown> | null = null;
+        if (startTime || endTime || day) {
+            time = {};
+            // Only include day if set — Timeslot.day is a primitive char, can't be null
+            if (day) time.day = day;
+            if (startTime) time.start_time = startTime.split(":").map(Number);
+            if (endTime) time.end_time = endTime.split(":").map(Number);
+        }
+
         const postData = {
+            semester: getString("semester"),
             name: getString("name"),
             prof: getString("prof"),
             dept: getString("dept"),
             credits: getString("credits"),
-            time: null,
+            time,
         };
 
         try {

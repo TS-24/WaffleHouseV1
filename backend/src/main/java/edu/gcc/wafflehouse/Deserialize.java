@@ -40,7 +40,7 @@ public class Deserialize {
                         course.getFaculty(),
                         course.getCredits(),
                         course.getTotal_seats(),
-                        course.getSemester().substring(5),
+                        course.getSemester(),
                         course.getTimes()
                 );
 

@@ -16,7 +16,7 @@ public class CourseData {
     private int number;
     private int open_seats;
     private char section;
-    private String semester;
+    private String semester;  // e.g. "2024_Fall", "2023_Winter_Online"
     private String subject;
     private ArrayList<Timeslot> times;
     private int total_seats;

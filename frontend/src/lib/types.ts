@@ -12,7 +12,6 @@ export interface Course {
     department: string
     professor: string
     creditHours: number
-    year: number
-    semester: number
+    semester: string
     times: Date[]
 };
