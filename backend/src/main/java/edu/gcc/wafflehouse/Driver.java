@@ -22,14 +22,6 @@ public class Driver {
         // Search database
         app.get("/search", ctx -> {
             String query = ctx.queryParam("q");  // get query
-
-            // Handle cases where the query parameter is missing or empty
-            if (query == null || query.isEmpty()) {
-                ctx.status(400); // Bad Request
-                ctx.result("Missing 'query' parameter");
-                return;
-            }
-
             ArrayList<Course> results = search.search(query);  // Search
             ctx.json(results);  // return results in JSON
         });

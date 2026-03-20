@@ -25,8 +25,6 @@ export default function SearchCalendarBar({ hasSearched, setHasSearched, setResu
 
     const handleSearch = async (e: React.SubmitEvent) => {
         e.preventDefault();
-        if (!query.trim()) return;
-
         try {
             const res = await fetch(`http://localhost:7001/search?q=${query}`);
             if (!res.ok) {

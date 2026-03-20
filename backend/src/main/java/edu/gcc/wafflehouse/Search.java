@@ -53,8 +53,8 @@ public class Search {
         ArrayList<Course> results = new ArrayList<>();
 
         // Return null if the query is empty.
-        if (query == null) {
-            this.results = results;
+        if (query == null || query.isEmpty()) {
+            this.results = courses;
             return results;
         }
 
