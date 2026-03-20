@@ -7,10 +7,12 @@ Works better than the official college website.
 ## Getting started
 
 ```sh
+# Clone repo
 git clone https://github.com/TS-24/WaffleHouseV1.git
 cd WaffleHouseV1
 
 # Backend 
+cd backend
 gradlew.bat run  # or ./gradlew run for macOS/Linux
 
 # Frontend
