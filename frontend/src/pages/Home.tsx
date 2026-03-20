@@ -432,6 +432,7 @@ export default function Home() {
             prof:     getString("prof"),
             dept:     getString("dept"),
             credits:  getString("credits"),
+            year:     getString("year"),
             time,
         };
 

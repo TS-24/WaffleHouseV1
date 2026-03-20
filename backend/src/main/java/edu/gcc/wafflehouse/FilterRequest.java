@@ -11,5 +11,6 @@ public class FilterRequest {
     public Timeslot time;
     public String credits;
     public String semester;
+    public String year;
     // All fields are nullable — null means "don't filter on this"
 }

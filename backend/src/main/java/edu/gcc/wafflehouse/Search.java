@@ -18,6 +18,7 @@ public class Search {
     public DepartmentFilter deptFilter;
     public TimeFilter timeFilter;
     public CreditHourFilter credFilter;
+    public YearFilter yearFilter;
 
     /**
      * Initialize the fake database, cached results, and filters
@@ -33,6 +34,7 @@ public class Search {
         this.deptFilter = new DepartmentFilter(null);
         this.timeFilter = new TimeFilter(null);
         this.credFilter = new CreditHourFilter(null);
+        this.yearFilter = new YearFilter(null);
     }
 
     /**
@@ -118,6 +120,7 @@ public class Search {
                 .filter(course -> deptFilter.matches(course))
                 .filter(course -> timeFilter.matches(course))
                 .filter(course -> credFilter.matches(course))
+                .filter(course -> yearFilter.matches(course))
                 .collect(Collectors.toList());
     }
 

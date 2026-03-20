@@ -33,7 +33,7 @@ export default function FilterGroup({className}: React.ComponentProps<"div">) {
 //     const profAnchor = useComboboxAnchor()
 
     return (
-        <FieldGroup className={cn("grid grid-cols-7", className)}>
+        <FieldGroup className={cn("grid grid-cols-8", className)}>
         {/* Only show open courses */}
         {/* <Field>
             <FieldLabel htmlFor="hide-full">Hide full courses</FieldLabel>
@@ -42,10 +42,16 @@ export default function FilterGroup({className}: React.ComponentProps<"div">) {
             </Toggle>
         </Field> */}
 
+        {/* Year: Number input */}
+        <Field>
+            <FieldLabel htmlFor="year">Year</FieldLabel>
+            <Input id="year" name="year" type="number" placeholder="2024" />
+        </Field>
+
         {/* Semester. TODO: Combobox */}
         <Field>
             <FieldLabel htmlFor="semester">Semester</FieldLabel>
-            <Input id="semester" name="semester" placeholder="2024_Fall, 2023_Winter_Online" />
+            <Input id="semester" name="semester" placeholder="Fall, Spring, Winter_Online..." />
             {/* <Combobox items={departments}>
                 <ComboboxInput id="department" name="dept" placeholder="Department" showClear />
                 <ComboboxContent>

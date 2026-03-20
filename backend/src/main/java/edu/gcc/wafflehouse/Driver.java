@@ -50,6 +50,7 @@ public class Driver {
             search.deptFilter.setInput(req.dept);
             search.timeFilter.setInput(req.time);
             search.credFilter.setInput(req.credits);
+            search.yearFilter.setInput(req.year);
 
             // TODO: (sprint 2) make it more secure by switching search filters to private variables? IDK
 
