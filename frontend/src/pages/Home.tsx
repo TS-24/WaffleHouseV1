@@ -1,25 +1,28 @@
-import { useState, useRef, useMemo, useEffect } from "react"
-import type { ColumnDef } from "@tanstack/react-table"  // use "import type" when what you're importing is a TS-only type
+import { useState, useRef, useMemo, useEffect, useCallback } from "react"
+import type { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import BigCalendar from "@/components/BigCalendar"
 import type { CourseEvent } from "@/components/BigCalendar"
 import { DataTable } from "@/components/DataTable"
 import Footer from "@/components/Footer.tsx"
-import type { Mode, Course } from "@/lib/types"         // same here
+import type { Mode, Course } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import * as React from "react";
 import SearchCalendarBar from "@/components/SearchCalendarBar.tsx";
 import FilterGroup from "@/components/FilterGroup.tsx";
 import { useNavigate } from "react-router-dom";
 
-
-// TODO: Update columns to match actual API response fields
-// const columns: ColumnDef<Course>[] = [
-//     { accessorKey: "id", header: "ID" },
-//     { accessorKey: "name", header: "Name" },
-//     { accessorKey: "description", header: "Description" },
-// ]
+const QUOTES = [
+    { text: "The fear of the Lord is the beginning of wisdom, and knowledge of the Holy One is understanding.", author: "Proverbs 9:10" },
+    { text: "Education is simply the soul of a society as it passes from one generation to another.", author: "G.K. Chesterton" },
+    { text: "The task of the modern educator is not to cut down jungles, but to irrigate deserts.", author: "C.S. Lewis" },
+    { text: "All truth is God's truth.", author: "Augustine of Hippo" },
+    { text: "The heart cannot delight in what the mind does not regard as true.", author: "J. Gresham Machen" },
+    { text: "Education without values, as useful as it is, seems rather to make man a more clever devil.", author: "C.S. Lewis" },
+    { text: "The glory of God is a human being fully alive.", author: "Irenaeus of Lyon" },
+    { text: "An educated mind is one that can entertain a thought without accepting it.", author: "Aristotle" },
+]
 
 /** Format a LocalTime value (Jackson serializes as [hour, minute] or [hour, minute, second]) to "HH:MM:SS" */
 function formatTime(time: number[]): string {
@@ -27,8 +30,39 @@ function formatTime(time: number[]): string {
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-/** Transform backend Course objects (from /schedule or POST /course response) into CourseEvents for BigCalendar */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/** Convert a LocalTime array [hour, minute, ...] to total minutes, for arithmetic comparison */
+function toMinutes(time: number[]): number {
+    const [h = 0, m = 0] = time;
+    return h * 60 + m;
+}
+
+/**
+ * Returns true if the candidate course has a timeslot that overlaps with any
+ * timeslot of any course already in the schedule.
+ *
+ * Two timeslots overlap if they share a day AND one starts before the other ends.
+ * This mirrors the standard interval overlap check: A overlaps B if A.start < B.end && A.end > B.start.
+ */
+function courseConflicts(candidate: any, schedule: any[]): boolean {
+    for (const scheduled of schedule) {
+        for (const candidateSlot of (candidate.times || [])) {
+            for (const scheduledSlot of (scheduled.times || [])) {
+                // Must be the same day of the week to conflict
+                if (String(candidateSlot.day) !== String(scheduledSlot.day)) continue;
+
+                const candStart  = toMinutes(candidateSlot.start_time);
+                const candEnd    = toMinutes(candidateSlot.end_time);
+                const schedStart = toMinutes(scheduledSlot.start_time);
+                const schedEnd   = toMinutes(scheduledSlot.end_time);
+
+                if (candStart < schedEnd && candEnd > schedStart) return true;
+            }
+        }
+    }
+    return false;
+}
+
+/** Transform backend Course objects into CourseEvents for BigCalendar */
 function toEvents(courses: any[]): CourseEvent[] {
     return courses.flatMap((course) =>
         (course.times || []).map((slot: any) => ({
@@ -43,17 +77,6 @@ function toEvents(courses: any[]): CourseEvent[] {
         }))
     );
 }
-// TODO: change this
-const QUOTES = [
-    { text: "The fear of the Lord is the beginning of wisdom, and knowledge of the Holy One is understanding.", author: "Proverbs 9:10" },
-    { text: "Education is simply the soul of a society as it passes from one generation to another.", author: "G.K. Chesterton" },
-    { text: "The task of the modern educator is not to cut down jungles, but to irrigate deserts.", author: "C.S. Lewis" },
-    { text: "All truth is God's truth.", author: "Augustine of Hippo" },
-    { text: "The heart cannot delight in what the mind does not regard as true.", author: "J. Gresham Machen" },
-    { text: "Education without values, as useful as it is, seems rather to make man a more clever devil.", author: "C.S. Lewis" },
-    { text: "The glory of God is a human being fully alive.", author: "Irenaeus of Lyon" },
-    { text: "An educated mind is one that can entertain a thought without accepting it.", author: "Aristotle" },
-]
 
 export default function Home() {
     const navigate = useNavigate()
@@ -65,49 +88,60 @@ export default function Home() {
     const filterFormRef = useRef<HTMLFormElement>(null)
     const quote = useMemo(() => QUOTES[Math.floor(Math.random() * QUOTES.length)], [])
 
-    /** Update both raw schedule and transformed calendar events at once */
-    const updateSchedule = (data: any[]) => {
-        setSchedule(data);
-        setEvents(toEvents(data));
-    };
-
-    function courseConflicts(candidate: any, schedule: any[]): boolean {
-
-        candidate.getTimes()
-        for (const course of schedule) {
-            for (const time1 of candidate.getTimes() {
-                for (const time2 of course.getTimes() {
-                    if ((time1.getend_time() > time2.getstart_time())
-                        && (time1.getstart_time() < time2.getend_time())
-                        && (time1.getDay() == time2.getDay()) {
-                            return true;
-                    }
-                }
-            }
-        }
-    }
-
-    // Fetch schedule on mount
-    useEffect(() => {
+    /**
+     * Fetch the current schedule from the backend and update both the raw
+     * schedule state and the calendar events derived from it.
+     *
+     * Extracted into its own function so it can be called after any add/remove,
+     * keeping the frontend in sync with the backend as the source of truth.
+     */
+    const fetchSchedule = useCallback(() => {
         fetch("http://localhost:7001/schedule")
             .then((res) => res.json())
-            .then((data) => updateSchedule(data))
+            .then((data) => {
+                setSchedule(data);
+                setEvents(toEvents(data));
+            })
             .catch((err) => console.error("Failed to fetch schedule:", err));
     }, []);
 
-    // Columns / headers for table of search results
+    // Fetch schedule once on mount
+    useEffect(() => {
+        fetchSchedule();
+    }, [fetchSchedule]);
+
+    /**
+     * The set of course IDs that conflict with the current schedule.
+     * Recomputed automatically whenever `results` or `schedule` changes —
+     * so adding or dropping a course instantly re-evaluates all displayed rows.
+     */
+    const conflictingIds = useMemo<Set<number>>(() => {
+        const ids = new Set<number>();
+        for (const course of results) {
+            if (courseConflicts(course, schedule)) {
+                ids.add(course.id);
+            }
+        }
+        return ids;
+    }, [results, schedule]);
+
+    // Columns for the search results table
     const columns: ColumnDef<Course>[] = [
         { accessorKey: "subject", header: "Dept" },
         { accessorKey: "code", header: "Code" },
         { accessorKey: "section", header: "Section" },
-        { accessorKey: "name", header: "Course name", cell: ({ row }) => (
-            <button
-                onClick={() => navigate(`/course/${row.original.id}`)}
-                className="text-left hover:underline cursor-pointer text-foreground"
-            >
-                {row.original.name}
-            </button>
-        )},
+        {
+            accessorKey: "name",
+            header: "Course name",
+            cell: ({ row }) => (
+                <button
+                    onClick={() => navigate(`/course/${row.original.id}`)}
+                    className="text-left hover:underline cursor-pointer text-foreground"
+                >
+                    {row.original.name}
+                </button>
+            )
+        },
         { accessorKey: "creditHours", header: "Credits" },
         {
             id: "professor",
@@ -125,10 +159,10 @@ export default function Home() {
                 const times = row.original.times;
                 if (!Array.isArray(times)) return null;
                 return times.map((t) => {
-                    const day = String(t.day);
+                    const day   = String(t.day);
                     const start = Array.isArray(t.start_time) ? formatTime(t.start_time) : String(t.start_time);
-                    const end = Array.isArray(t.end_time) ? formatTime(t.end_time) : String(t.end_time);
-                    return `${day} ${start} ${end}`;
+                    const end   = Array.isArray(t.end_time)   ? formatTime(t.end_time)   : String(t.end_time);
+                    return `${day} ${start}–${end}`;
                 }).join(", ");
             },
         },
@@ -137,9 +171,12 @@ export default function Home() {
             header: "",
             cell: ({ row }) => {
                 const course = row.original;
+                const conflicts = conflictingIds.has(course.id);
                 return (
                     <Button
                         size="sm"
+                        disabled={conflicts}           // prevent clicking on conflicting courses
+                        title={conflicts ? "This course conflicts with your schedule" : undefined}
                         onClick={async () => {
                             try {
                                 const res = await fetch("http://localhost:7001/course", {
@@ -152,9 +189,15 @@ export default function Home() {
                                     console.error(`Failed to add course: ${res.status} ${res.statusText}`, body);
                                     return;
                                 }
-                                const data = await res.json();
-                                console.log("Course added successfully:", course.name);
-                                updateSchedule(data);
+                                const added: boolean = await res.json();
+                                if (added) {
+                                    console.log("Course added successfully:", course.name);
+                                    // Re-fetch the schedule from the backend so the frontend
+                                    // reflects the authoritative server state
+                                    fetchSchedule();
+                                } else {
+                                    console.warn("Course was not added (already in schedule?):", course.name);
+                                }
                             } catch (err) {
                                 console.error("Error adding course:", err);
                             }
@@ -167,7 +210,7 @@ export default function Home() {
         },
     ];
 
-    // Columns for the schedule table (shown below calendar)
+    // Columns for the schedule table shown below the calendar
     const scheduleColumns: ColumnDef<any>[] = [
         { accessorKey: "subject", header: "Dept" },
         { accessorKey: "code", header: "Code" },
@@ -189,10 +232,10 @@ export default function Home() {
                 const times = row.original.times;
                 if (!Array.isArray(times)) return null;
                 return times.map((t) => {
-                    const day = String(t.day);
+                    const day   = String(t.day);
                     const start = Array.isArray(t.start_time) ? formatTime(t.start_time) : String(t.start_time);
-                    const end = Array.isArray(t.end_time) ? formatTime(t.end_time) : String(t.end_time);
-                    return `${day} ${start} ${end}`;
+                    const end   = Array.isArray(t.end_time)   ? formatTime(t.end_time)   : String(t.end_time);
+                    return `${day} ${start}–${end}`;
                 }).join(", ");
             },
         },
@@ -217,9 +260,14 @@ export default function Home() {
                                     console.error(`Failed to remove course: ${res.status} ${res.statusText}`, body);
                                     return;
                                 }
-                                const data = await res.json();
-                                console.log("Course removed successfully:", course.name);
-                                updateSchedule(data);
+                                const removed: boolean = await res.json();
+                                if (removed) {
+                                    console.log("Course removed successfully:", course.name);
+                                    // Re-fetch schedule from the backend to keep frontend in sync
+                                    fetchSchedule();
+                                } else {
+                                    console.warn("Course was not removed (not in schedule?):", course.name);
+                                }
                             } catch (err) {
                                 console.error("Error removing course:", err);
                             }
@@ -241,34 +289,32 @@ export default function Home() {
             return val && String(val).trim() ? String(val).trim() : null;
         };
 
-        // Build time filter object from start-time, end-time, and day-of-week fields
         const startTime = getString("start-time");
-        const endTime = getString("end-time");
-        const day = getString("day-of-week");
+        const endTime   = getString("end-time");
+        const day       = getString("day-of-week");
 
         let time: Record<string, unknown> | null = null;
         if (startTime || endTime || day) {
             time = {};
-            // Only include day if set — Timeslot.day is a primitive char, can't be null
-            if (day) time.day = day;
+            if (day)       time.day        = day;
             if (startTime) time.start_time = startTime.split(":").map(Number);
-            if (endTime) time.end_time = endTime.split(":").map(Number);
+            if (endTime)   time.end_time   = endTime.split(":").map(Number);
         }
 
         const postData = {
             semester: getString("semester"),
-            name: getString("name"),
-            prof: getString("prof"),
-            dept: getString("dept"),
-            credits: getString("credits"),
+            name:     getString("name"),
+            prof:     getString("prof"),
+            dept:     getString("dept"),
+            credits:  getString("credits"),
             time,
         };
 
         try {
             const res = await fetch(`http://localhost:7001/filters`, {
                 method: "POST",
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(postData)
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(postData),
             });
             if (!res.ok) {
                 console.error(`Filter failed: ${res.status} ${res.statusText}`);
@@ -290,11 +336,13 @@ export default function Home() {
         <div className="min-h-screen flex flex-col bg-background">
             {/* Header */}
             <header className="relative h-16 flex items-center px-6">
-
-                {/* Search Bar, with Calendar Button */}
-                <SearchCalendarBar hasSearched={hasSearched} setHasSearched={setHasSearched} setResults={setResults} mode={mode} setMode={setMode} />
-
-                {/* Avatar (always visible, right-aligned) */}
+                <SearchCalendarBar
+                    hasSearched={hasSearched}
+                    setHasSearched={setHasSearched}
+                    setResults={setResults}
+                    mode={mode}
+                    setMode={setMode}
+                />
                 <div className="ml-auto">
                     <Button variant="ghost" size="icon" className="rounded-full">
                         <Avatar>
@@ -329,7 +377,19 @@ export default function Home() {
                         </form>
                         <div className="flex-1 flex flex-col items-center px-6 pt-8">
                             <div className="w-full max-w-4xl mx-auto">
-                                <DataTable columns={columns} data={results} />
+                                {/*
+                                  * Pass getRowClassName to DataTable so conflicting rows are greyed out.
+                                  * See the note below about the small change needed in DataTable.tsx.
+                                  */}
+                                <DataTable
+                                    columns={columns}
+                                    data={results}
+                                    getRowClassName={(course: any) =>
+                                        conflictingIds.has(course.id)
+                                            ? "opacity-40 pointer-events-none select-none"
+                                            : ""
+                                    }
+                                />
                             </div>
                         </div>
                     </div>
@@ -339,8 +399,6 @@ export default function Home() {
                 {mode === "calendar" && (
                     <div className="flex-1 flex flex-col items-center max-w-2/3 mt-8">
                         <BigCalendar events={events} />
-
-                        {/* Schedule list with remove buttons */}
                         {schedule.length > 0 && (
                             <div className="w-full max-w-4xl mx-auto mt-8">
                                 <h2 className="text-lg font-semibold mb-3">My Schedule</h2>
