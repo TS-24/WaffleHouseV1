@@ -1,7 +1,10 @@
 package edu.gcc.wafflehouse;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
 import java.io.File;
 
@@ -105,21 +108,45 @@ public class Schedule {
     }
 
     /**
-     * Save the Schedule object to a JSON file.
-     * @throws IOException Throw if ObjectMapper has issues.
+     * Save the schedule as a list of course IDs to a JSON file in the
+     * working directory (wherever the server process is running from).
+     * IDs are saved rather than full Course objects so that on load we can
+     * look up live references in Search — keeping seat counts in sync.
+     * @throws IOException Thrown if ObjectMapper has issues writing the file.
      */
     public void saveSchedule() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(new File("../../resources/schedule.json"), Schedule.class);
+        List<Long> ids = courses.stream()
+                .map(Course::getID)
+                .collect(Collectors.toList());
+        // Anchor to the JVM working directory so the path is predictable
+        // regardless of how the server is launched.
+        File file = new File(System.getProperty("user.dir"), "schedule.json");
+        file.getParentFile().mkdirs(); // ensure parent dirs exist
+        mapper.writeValue(file, ids);
     }
 
     /**
-     * Load the Schedule saved in the JSON file.
-     * @throws IOException Throw if the ObjectMapper has issues.
+     * Load the schedule from a JSON file in the working directory.
+     * Reads the saved course IDs and looks each one up in Search to get the
+     * live Course reference — so seat counts remain shared with Search.
+     * Courses whose IDs no longer exist in Search are silently skipped.
+     * If the save file does not exist yet, this is a no-op (schedule stays empty).
+     * @param search The Search instance holding the live course objects.
+     * @throws IOException Thrown if the file exists but cannot be read or parsed.
      */
-    public void loadSchedule() throws IOException {
+    public void loadSchedule(Search search) throws IOException {
+        File file = new File(System.getProperty("user.dir"), "schedule.json");
+        // No save file yet — nothing to load, leave the schedule as-is
+        if (!file.exists()) return;
         ObjectMapper mapper = new ObjectMapper();
-        Schedule temp = mapper.readValue(new File("../../resources/schedule.json"), Schedule.class);
-        this.courses = temp.getCourses();
+        List<Long> ids = mapper.readValue(file, new TypeReference<List<Long>>() {});
+        this.courses = new ArrayList<>();
+        for (long id : ids) {
+            Course course = search.searchByID(id);
+            if (course != null) {
+                courses.add(course);  // store live reference, same as addCourse
+            }
+        }
     }
 }

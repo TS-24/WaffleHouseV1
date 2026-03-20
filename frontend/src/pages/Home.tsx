@@ -12,6 +12,7 @@ import * as React from "react";
 import SearchCalendarBar from "@/components/SearchCalendarBar.tsx";
 import FilterGroup from "@/components/FilterGroup.tsx";
 import { useNavigate } from "react-router-dom";
+import { AlertTriangle } from "lucide-react";
 
 const QUOTES = [
     { text: "The fear of the Lord is the beginning of wisdom, and knowledge of the Holy One is understanding.", author: "Proverbs 9:10" },
@@ -89,6 +90,16 @@ export default function Home() {
     const [schedule, setSchedule] = useState<any[]>([])
     const filterFormRef = useRef<HTMLFormElement>(null)
     const quote = useMemo(() => QUOTES[Math.floor(Math.random() * QUOTES.length)], [])
+
+    /**
+     * Transient notification shown at the top of the page after save/load.
+     * Cleared automatically after 3 seconds.
+     */
+    const [toast, setToast] = React.useState<{ message: string; ok: boolean } | null>(null);
+    const showToast = useCallback((message: string, ok: boolean) => {
+        setToast({ message, ok });
+        setTimeout(() => setToast(null), 3000);
+    }, []);
 
     const fetchSchedule = useCallback(() => {
         fetch("http://localhost:7001/schedule")
@@ -232,7 +243,15 @@ export default function Home() {
             header: "Open Seats",
             cell: ({ row }) => {
                 const dimmed = scheduledIds.has(row.original.id) || conflictingIds.has(row.original.id);
-                return <span className={dimmed ? "opacity-30" : ""}>{row.original.openSeats}</span>;
+                const noSeats = row.original.openSeats === 0;
+                return (
+                    <span className={dimmed ? "opacity-30" : ""}>
+                        {noSeats && (
+                            <AlertTriangle className="inline h-3.5 w-3.5 mr-1 text-amber-500" />
+                        )}
+                        {row.original.openSeats}
+                    </span>
+                );
             },
         },
         {
@@ -440,8 +459,20 @@ export default function Home() {
 
     return (
         <div className="min-h-screen flex flex-col bg-background">
+            {/* Transient save/load notification — auto-dismisses after 3 seconds */}
+            {toast && (
+                <div className={cn(
+                    "fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg shadow-md text-sm font-medium transition-all",
+                    toast.ok
+                        ? "bg-green-100 text-green-800 border border-green-200"
+                        : "bg-red-100 text-red-800 border border-red-200"
+                )}>
+                    {toast.message}
+                </div>
+            )}
+
             {/* Header */}
-            <header className="relative h-16 flex items-center px-6">
+            <header className="relative h-16 flex items-center px-6 gap-2">
                 <SearchCalendarBar
                     hasSearched={hasSearched}
                     setHasSearched={setHasSearched}
@@ -449,7 +480,55 @@ export default function Home() {
                     mode={mode}
                     setMode={setMode}
                 />
-                <div className="ml-auto">
+                <div className="ml-auto flex items-center gap-2">
+                    {/* Save and Load buttons persist the schedule to/from disk via the backend */}
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                            try {
+                                const res = await fetch("http://localhost:7001/schedule/save", {
+                                    method: "POST",
+                                });
+                                if (!res.ok) {
+                                    showToast("Failed to save schedule.", false);
+                                    console.error("Failed to save schedule:", await res.text());
+                                } else {
+                                    showToast("Schedule saved successfully.", true);
+                                }
+                            } catch (err) {
+                                showToast("Failed to save schedule.", false);
+                                console.error("Error saving schedule:", err);
+                            }
+                        }}
+                    >
+                        Save Schedule
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                            try {
+                                const res = await fetch("http://localhost:7001/schedule/load", {
+                                    method: "POST",
+                                });
+                                if (!res.ok) {
+                                    showToast("Failed to load schedule.", false);
+                                    console.error("Failed to load schedule:", await res.text());
+                                    return;
+                                }
+                                const data = await res.json();
+                                setSchedule(data);
+                                setEvents(toEvents(data));
+                                showToast("Schedule loaded successfully.", true);
+                            } catch (err) {
+                                showToast("Failed to load schedule.", false);
+                                console.error("Error loading schedule:", err);
+                            }
+                        }}
+                    >
+                        Load Schedule
+                    </Button>
                     <Button variant="ghost" size="icon" className="rounded-full">
                         <Avatar>
                             <AvatarImage src="" />

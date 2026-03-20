@@ -80,6 +80,8 @@ public class Driver {
         // Looks up the live Course object in Search by ID so that Schedule stores
         // a reference to the same object — meaning seat count changes are reflected
         // everywhere that holds a reference to that Course.
+        // Seat count is only adjusted for open courses — closed courses may still be
+        // added to the schedule, but their seat count is left unchanged.
         app.post("/course", ctx -> {
             Course incoming = ctx.bodyAsClass(Course.class);
             Course actual = search.searchByID(incoming.getID());
@@ -89,7 +91,7 @@ public class Driver {
                 return;
             }
             boolean added = schedule.addCourse(actual);
-            if (added) {
+            if (added && actual.getIsOpen()) {
                 actual.decrementOpenSeats();
             }
             ctx.json(added);
@@ -98,6 +100,7 @@ public class Driver {
         // Remove a Course from the Schedule, and return success or failure.
         // Uses the live reference stored in Schedule so the same object whose
         // seat count was decremented on add is incremented on remove.
+        // Seat count is only restored for open courses, matching the add behaviour.
         app.delete("/course", ctx -> {
             Course incoming = ctx.bodyAsClass(Course.class);
             Course actual = search.searchByID(incoming.getID());
@@ -107,10 +110,34 @@ public class Driver {
                 return;
             }
             boolean removed = schedule.removeCourse(actual);
-            if (removed) {
+            if (removed && actual.getIsOpen()) {
                 actual.incrementOpenSeats();
             }
             ctx.json(removed);
+        });
+
+        // Save the current schedule to disk as a list of course IDs.
+        app.post("/schedule/save", ctx -> {
+            try {
+                schedule.saveSchedule();
+                ctx.status(200);
+                ctx.result("Schedule saved");
+            } catch (Exception e) {
+                ctx.status(500);
+                ctx.result("Failed to save schedule: " + e.getMessage());
+            }
+        });
+
+        // Load the schedule from disk, rehydrating live Course references from Search.
+        // Returns the loaded schedule so the frontend can update its state.
+        app.post("/schedule/load", ctx -> {
+            try {
+                schedule.loadSchedule(search);
+                ctx.json(schedule.getCourses());
+            } catch (Exception e) {
+                ctx.status(500);
+                ctx.result("Failed to load schedule: " + e.getMessage());
+            }
         });
     }
 

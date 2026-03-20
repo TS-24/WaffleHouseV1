@@ -337,6 +337,13 @@ export default function Course() {
                         </div>
                     )}
 
+                    {course.openSeats === 0 && (
+                        <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-amber-50 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200 border border-amber-200 dark:border-amber-800">
+                            <AlertTriangle className="h-5 w-5 shrink-0" />
+                            <span className="text-sm font-medium">This course has no open seats.</span>
+                        </div>
+                    )}
+
                     {/* Add button — only shown when the course is not in the schedule and has no conflicts */}
                     {!isInSchedule && !hasConflicts && (
                         <div className="flex justify-end">
