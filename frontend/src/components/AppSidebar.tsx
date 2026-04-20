@@ -19,7 +19,7 @@ export function AppSidebar({ onFilterChange }: { onFilterChange?: () => void }) 
   return (
     <Sidebar collapsible="offcanvas">
       <SidebarHeader className="px-4 py-3 text-lg font-semibold">Filters</SidebarHeader>
-      <SidebarContent className="px-2" onChange={onFilterChange}>
+      <SidebarContent className="px-2" onInput={onFilterChange} onChange={onFilterChange}>
         <SidebarGroup>
           <SidebarGroupLabel>Department</SidebarGroupLabel>
           <SidebarGroupContent>
