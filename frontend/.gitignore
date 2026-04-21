@@ -26,5 +26,8 @@ dist-ssr
 *.sln
 *.sw?
 
+# Supabase
+.env
+
 # AI
 .claude/
