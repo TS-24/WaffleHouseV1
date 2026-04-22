@@ -184,46 +184,47 @@ function FiltersSidebarInner({ setResults }: FiltersSidebarProps) {
                         />
                     </SidebarGroupContent>
                 </SidebarGroup>
-
                 <SidebarGroup>
-                    <SidebarGroupLabel>Days of the week</SidebarGroupLabel>
-                    <SidebarGroupContent>
+                    <SidebarGroupLabel>Day & Time</SidebarGroupLabel>
+                    <SidebarGroupContent className="flex flex-col gap-2">
                         <ToggleGroup
                             type="multiple"
                             variant="outline"
                             value={days}
                             onValueChange={setDays}
+                            className="w-full"
                         >
                             {DAYS.map(d => (
-                                <ToggleGroupItem key={d.value} value={d.value} aria-label={d.value}>
+                                <ToggleGroupItem
+                                    key={d.value}
+                                    value={d.value}
+                                    aria-label={d.value}
+                                    className="flex-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary"
+                                >
                                     {d.label}
                                 </ToggleGroupItem>
                             ))}
                         </ToggleGroup>
-                    </SidebarGroupContent>
-                </SidebarGroup>
-
-                <SidebarGroup>
-                    <SidebarGroupLabel>Time range</SidebarGroupLabel>
-                    <SidebarGroupContent className="flex gap-2">
-                        <Input
-                            id="start-time"
-                            type="time"
-                            min="08:00"
-                            max="21:00"
-                            step="900"
-                            value={startTime}
-                            onChange={e => setStartTime(e.target.value)}
-                        />
-                        <Input
-                            id="end-time"
-                            type="time"
-                            min="08:00"
-                            max="21:00"
-                            step="900"
-                            value={endTime}
-                            onChange={e => setEndTime(e.target.value)}
-                        />
+                        <div className="flex gap-2">
+                            <Input
+                                id="start-time"
+                                type="time"
+                                min="08:00"
+                                max="21:00"
+                                step="900"
+                                value={startTime}
+                                onChange={e => setStartTime(e.target.value)}
+                            />
+                            <Input
+                                id="end-time"
+                                type="time"
+                                min="08:00"
+                                max="21:00"
+                                step="900"
+                                value={endTime}
+                                onChange={e => setEndTime(e.target.value)}
+                            />
+                        </div>
                     </SidebarGroupContent>
                 </SidebarGroup>
 
