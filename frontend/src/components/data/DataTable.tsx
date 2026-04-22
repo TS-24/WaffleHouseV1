@@ -102,26 +102,27 @@ export function DataTable<TData, TValue>({
                     )}
                     {/* --- infinite-scroll change ---
                         Sentinel row rendered only when the parent opted in.
-                        Renders after all data rows. A separate "Loading…" row
-                        is shown while the next page is in flight. */}
+                        Stays inside the table because the IntersectionObserver
+                        needs it to sit *after* the last data row. */}
                     {loadMoreRef && rows.length > 0 && (
                         <TableRow ref={loadMoreRef} aria-hidden>
                             <TableCell colSpan={columns.length} className="h-2 p-0" />
                         </TableRow>
                     )}
-                    {isFetchingMore && (
-                        <TableRow>
-                            <TableCell
-                                colSpan={columns.length}
-                                className="h-12 text-center text-muted-foreground text-sm"
-                            >
-                                Loading more…
-                            </TableCell>
-                        </TableRow>
-                    )}
                     {/* --- /infinite-scroll change --- */}
                 </TableBody>
             </Table>
+            {/* --- infinite-scroll change ---
+                "Loading more…" lives outside <Table> so it spans the full
+                container width and `text-center` centers it reliably,
+                independent of the table's column widths or any sticky column
+                pushing cell content off-center. */}
+            {isFetchingMore && (
+                <div className="w-full py-3 text-center text-sm text-muted-foreground">
+                    Loading more…
+                </div>
+            )}
+            {/* --- /infinite-scroll change --- */}
         </div>
     )
 }
