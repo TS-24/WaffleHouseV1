@@ -104,15 +104,37 @@ export async function searchCourses(query: string): Promise<Course[]> {
 export interface FilterParams {
     semester?: string | null;
     name?: string | null;
-    prof?: string | null;
+    prof?: string[] | null;
     dept?: string | null;
-    credits?: string | null;
+    credits?: { min: number; max: number } | null;
     year?: string | null;
     time?: {
-        day?: string;
+        days?: string[];
         start_time?: number[];
         end_time?: number[];
     } | null;
+}
+
+export async function fetchFilterOptions(): Promise<{ subjects: string[]; faculty: string[] }> {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        throw new Error("User is not authenticated");
+    }
+    const { data, error } = await supabase.from('courses').select('subject, faculty');
+    if (error || !data) {
+        console.error("Failed to fetch filter options:", error?.message);
+        return { subjects: [], faculty: [] };
+    }
+    const subjectSet = new Set<string>();
+    const facultySet = new Set<string>();
+    for (const row of data as { subject: string | null; faculty: string | null }[]) {
+        if (row.subject) subjectSet.add(row.subject);
+        if (row.faculty) facultySet.add(row.faculty);
+    }
+    return {
+        subjects: [...subjectSet].sort(),
+        faculty: [...facultySet].sort(),
+    };
 }
 
 export async function filterCourses(filters: FilterParams): Promise<Course[]> {
@@ -133,7 +155,7 @@ export async function filterCourses(filters: FilterParams): Promise<Course[]> {
             query = query.eq('semester', filters.semester);
         }
         if (filters.credits) {
-            query = query.eq('credits', parseInt(filters.credits, 10));
+            query = query.gte('credits', filters.credits.min).lte('credits', filters.credits.max);
         }
         if (filters.year) {
             const yearStr = parseInt(filters.year, 10).toString();
@@ -142,8 +164,8 @@ export async function filterCourses(filters: FilterParams): Promise<Course[]> {
         if (filters.name) {
             query = query.ilike('name', `%${filters.name}%`);
         }
-        if (filters.prof) {
-            query = query.ilike('faculty', `%${filters.prof}%`);
+        if (filters.prof && filters.prof.length > 0) {
+            query = query.in('faculty', filters.prof);
         }
 
         const { data, error } = await query;
@@ -186,11 +208,11 @@ export async function filterCourses(filters: FilterParams): Promise<Course[]> {
                 if (filters.time) {
                     courses = courses.filter(course => {
                         return course.times.some(slot => {
-                            if (filters.time?.day && String(slot.day) !== String(filters.time.day)) {
-                                return false;
+                            if (filters.time?.days && filters.time.days.length > 0) {
+                                if (!filters.time.days.includes(String(slot.day))) return false;
                             }
                             if (filters.time?.start_time && filters.time?.end_time) {
-                                const slotStart = Array.isArray(slot.start_time) 
+                                const slotStart = Array.isArray(slot.start_time)
                                     ? slot.start_time[0] * 60 + slot.start_time[1]
                                     : 0;
                                 const filterStart = filters.time.start_time[0] * 60 + filters.time.start_time[1];
