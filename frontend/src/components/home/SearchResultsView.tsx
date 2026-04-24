@@ -134,5 +134,3 @@ export default function SearchResultsView({
         </div>
     )
 }
-
-export default React.memo(SearchResultsViewInner)
