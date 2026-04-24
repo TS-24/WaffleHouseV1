@@ -4,13 +4,13 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetFooter,
-} from "@/components/ui/sheet"
-import type { EditDialogProps } from "./types"
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import type { EditDialogProps } from "@/lib/types"
 
 /**
  * EditDialog Component
@@ -34,6 +34,10 @@ export default function EditDialog({
     setIsLoading(true)
     try {
       await onSave(inputValue)
+      setInputValue(currentValue) // Reset after successful save
+    } catch (error) {
+      console.error("Error saving:", error)
+      // Keep the dialog open and let the user try again
     } finally {
       setIsLoading(false)
     }
@@ -50,11 +54,11 @@ export default function EditDialog({
   }
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
-      <SheetContent side="bottom" className="w-full sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle>Edit {label}</SheetTitle>
-        </SheetHeader>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Edit {label}</DialogTitle>
+        </DialogHeader>
 
         <div className="py-4">
           <Input
@@ -67,7 +71,7 @@ export default function EditDialog({
           />
         </div>
 
-        <SheetFooter className="flex gap-2 justify-end">
+        <DialogFooter className="flex gap-2 justify-end">
           <Button
             variant="outline"
             onClick={handleCancel}
@@ -81,8 +85,8 @@ export default function EditDialog({
           >
             {isLoading ? "Saving..." : "Save"}
           </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

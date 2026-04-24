@@ -1,11 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Edit3 } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import EditableField from "./EditableField"
 import EditDialog from "./EditDialog"
-import type { ProfileDisplayProps } from "./types"
+import type { ProfileDisplayProps } from "@/lib/types"
 
 /**
  * ProfileDisplay Component
@@ -27,25 +25,22 @@ export default function ProfileDisplay({
 
   return (
     <div className="space-y-6">
-      {/* Name Section */}
-      <div className="flex items-center justify-between">
+      {/* Name Section - Fully Clickable */}
+      <div
+        onClick={() => setIsNameDialogOpen(true)}
+        className="group cursor-pointer rounded-lg p-3 transition-all duration-200 hover:bg-accent hover:shadow-sm"
+      >
         <div className="space-y-1">
-          <h2 className="text-2xl font-semibold text-foreground">
+          <label className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+            Name
+          </label>
+          <h2 className="text-2xl font-semibold text-foreground group-hover:text-primary transition-colors">
             {userProfile.name}
           </h2>
-          <p className="text-sm text-muted-foreground">
-            Click to edit your name
+          <p className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+            Click to edit
           </p>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setIsNameDialogOpen(true)}
-          className="gap-2"
-        >
-          <Edit3 className="h-4 w-4" />
-          Edit
-        </Button>
       </div>
 
       {/* Name Edit Dialog */}

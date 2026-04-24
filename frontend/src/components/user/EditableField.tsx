@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Edit3 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import EditDialog from "./EditDialog"
-import type { EditableFieldProps } from "./types"
+import type { EditableFieldProps } from "@/lib/types"
 
 /**
  * EditableField Component

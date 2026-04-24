@@ -6,4 +6,4 @@
 export { default as EditableField } from "./EditableField"
 export { default as EditDialog } from "./EditDialog"
 export { default as ProfileDisplay } from "./ProfileDisplay"
-export type { UserProfile, EditableFieldProps, ProfileDisplayProps, EditDialogProps } from "./types"
+export type { UserProfile, EditableFieldProps, ProfileDisplayProps, EditDialogProps } from "@/lib/types"
