@@ -206,37 +206,6 @@ export default function User() {
             />
           </CardContent>
         </Card>
-
-        {/* Additional Cards for future features */}
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Academic Progress</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground text-sm">
-                Track your course completion and GPA
-              </p>
-              <div className="mt-4 text-2xl font-semibold">
-                Coming Soon
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Schedule Overview</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground text-sm">
-                View your current semester schedule
-              </p>
-              <div className="mt-4 text-2xl font-semibold">
-                Coming Soon
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   )
