@@ -1,17 +1,19 @@
 import * as React from "react"
 
-export type FontTheme = "minimal" | "classic" | "mono" | "analog"
+export type FontTheme = "minimal" | "classic" | "mono" | "analog" | "custom"
 export type ColorTheme = "neutral" | "blue" | "green" | "rose" | "amber"
 export type ThemeMode = "light" | "dark"
 
 export type ThemeSettings = {
     fontTheme: FontTheme
+    customFontFamily: string
     colorTheme: ColorTheme
     mode: ThemeMode
 }
 
 export type ThemeContextValue = ThemeSettings & {
     setFontTheme: (theme: FontTheme) => void
+    setCustomFontFamily: (fontFamily: string) => void
     setColorTheme: (theme: ColorTheme) => void
     setMode: (mode: ThemeMode) => void
     toggleMode: () => void
@@ -22,6 +24,7 @@ export const FONT_THEME_OPTIONS: Array<{ value: FontTheme; label: string }> = [
     { value: "classic", label: "Classic" },
     { value: "mono", label: "Mono" },
     { value: "analog", label: "Analog" },
+    { value: "custom", label: "Custom" },
 ]
 
 export const COLOR_THEME_OPTIONS: Array<{
@@ -38,6 +41,7 @@ export const COLOR_THEME_OPTIONS: Array<{
 
 export const DEFAULT_THEME_SETTINGS: ThemeSettings = {
     fontTheme: "minimal",
+    customFontFamily: "",
     colorTheme: "neutral",
     mode: "light",
 }

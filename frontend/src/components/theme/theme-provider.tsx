@@ -26,6 +26,10 @@ function isThemeMode(value: unknown): value is ThemeMode {
     return value === "light" || value === "dark"
 }
 
+function getCustomFontFamily(value: unknown): string {
+    return typeof value === "string" ? value.trim() : ""
+}
+
 function getInitialSettings(): ThemeSettings {
     if (typeof window === "undefined") return DEFAULT_THEME_SETTINGS
 
@@ -39,6 +43,7 @@ function getInitialSettings(): ThemeSettings {
             fontTheme: isFontTheme(parsed.fontTheme)
                 ? parsed.fontTheme
                 : DEFAULT_THEME_SETTINGS.fontTheme,
+            customFontFamily: getCustomFontFamily(parsed.customFontFamily),
             colorTheme: isColorTheme(parsed.colorTheme)
                 ? parsed.colorTheme
                 : DEFAULT_THEME_SETTINGS.colorTheme,
@@ -57,6 +62,12 @@ function applyTheme(settings: ThemeSettings) {
     root.classList.toggle("dark", settings.mode === "dark")
     root.dataset.fontTheme = settings.fontTheme
     root.dataset.colorTheme = settings.colorTheme
+
+    if (settings.fontTheme === "custom" && settings.customFontFamily) {
+        root.style.setProperty("--app-font-family", settings.customFontFamily)
+    } else {
+        root.style.removeProperty("--app-font-family")
+    }
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
@@ -72,6 +83,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             ...settings,
             setFontTheme: (fontTheme) =>
                 setSettings((current) => ({ ...current, fontTheme })),
+            setCustomFontFamily: (customFontFamily) =>
+                setSettings((current) => ({
+                    ...current,
+                    customFontFamily,
+                })),
             setColorTheme: (colorTheme) =>
                 setSettings((current) => ({ ...current, colorTheme })),
             setMode: (mode) => setSettings((current) => ({ ...current, mode })),

@@ -8,6 +8,7 @@ import {
     useThemeSettings,
 } from "@/components/theme/theme"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
     NativeSelect,
@@ -29,9 +30,11 @@ import { cn } from "@/lib/utils"
 export default function ThemePopoverButton() {
     const {
         fontTheme,
+        customFontFamily,
         colorTheme,
         mode,
         setFontTheme,
+        setCustomFontFamily,
         setColorTheme,
         setMode,
     } = useThemeSettings()
@@ -80,6 +83,21 @@ export default function ThemePopoverButton() {
                         ))}
                     </NativeSelect>
                 </div>
+
+                {fontTheme === "custom" && (
+                    <div className="space-y-2">
+                        <Label htmlFor="custom-font">Local font</Label>
+                        <Input
+                            id="custom-font"
+                            value={customFontFamily}
+                            onChange={(event) =>
+                                setCustomFontFamily(event.target.value)
+                            }
+                            placeholder='Aptos, "IBM Plex Sans"'
+                            className="min-w-60"
+                        />
+                    </div>
+                )}
 
                 <div className="space-y-2">
                     <Label>Color</Label>
