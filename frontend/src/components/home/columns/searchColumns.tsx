@@ -1,7 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { AlertTriangle, CircleMinus, CirclePlus } from "lucide-react"
-import { formatCourseTimes } from "@/lib/utils"
+import { formatCourseTimes, formatProfessorShort } from "@/lib/utils"
 import type { Course } from "@/lib/types"
 
 interface SearchColumnDeps {
@@ -113,6 +113,25 @@ export function buildSearchColumns(deps: SearchColumnDeps): ColumnDef<Course>[] 
                 }
                 const text = formatCourseTimes(times, { compactDays: true });
                 return <Dimmed dimmed={isDimmed(row.original.id)}>{text}</Dimmed>;
+            },
+        },
+        {
+            id: "professor",
+            accessorFn: (course) => course.professors
+                .map((p) => formatProfessorShort(p.firstName || p.lastName || ""))
+                .filter(Boolean)
+                .join(", "),
+            header: "Professor",
+            meta: {
+                headerClassName: "min-w-40",
+                cellClassName: "min-w-40 whitespace-nowrap",
+            },
+            cell: ({ row }) => {
+                const text = row.original.professors
+                    .map((p) => formatProfessorShort(p.firstName || p.lastName || ""))
+                    .filter(Boolean)
+                    .join(", ");
+                return <Dimmed dimmed={isDimmed(row.original.id)}>{text || "TBD"}</Dimmed>;
             },
         },
         {

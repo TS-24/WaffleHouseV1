@@ -79,6 +79,21 @@ export function formatProfessorName(prof: Professor): string {
     return prof.firstName || prof.lastName || "Unknown Professor"
 }
 
+/**
+ * Convert a backend faculty string like "Smith, Ethan Christopher" into a
+ * compact display form: "Ethan C. Smith". Falls back to the original input
+ * when it doesn't fit the "Last, First [Middle...]" shape.
+ */
+export function formatProfessorShort(raw: string): string {
+    const [last, given] = raw.split(",").map(s => s.trim())
+    if (!last || !given) return raw.trim()
+    const [first, middle] = given.split(/\s+/).filter(Boolean)
+    if (!first) return last
+    if (!middle) return `${first} ${last}`
+    const initial = middle.endsWith(".") ? middle : `${middle.charAt(0)}.`
+    return `${first} ${initial} ${last}`
+}
+
 /** Convert a time value (array or string) to total minutes for overlap comparison */
 export function toMinutes(time: number[] | string): number {
     const [h = 0, m = 0] = parseTimeParts(time);
