@@ -30,27 +30,35 @@ export async function getSchedule(userId: string): Promise<Course[]> {
     const scheduleId = await getUserScheduleId(userId);
     if (scheduleId === null) return [];
 
-    const { data: enrollments, error } = await supabase
+    const { data: enrollments, error: enrollError } = await supabase
         .from('enrollments')
-        .select('course_id, courses(*)')
+        .select('course_id')
         .eq('schedule_id', scheduleId);
-    if (error) throw error;
+    if (enrollError) throw enrollError;
     if (!enrollments || enrollments.length === 0) return [];
 
-    const courseIds = enrollments.map((e: any) => e.course_id);
+    const courseIds = enrollments.map((e: any) => e.course_id as number);
+
+    const { data: coursesData, error: coursesError } = await supabase
+        .from('courses')
+        .select('*')
+        .in('id', courseIds);
+    if (coursesError) throw coursesError;
+    if (!coursesData || coursesData.length === 0) return [];
+
     const { data: timesData } = await supabase
         .from('course_times')
         .select('*')
         .in('course_id', courseIds);
 
-    const timesMap = new Map<number, Timeslot[]>();
+    const timesMap = new Map<string, Timeslot[]>();
     (timesData || []).forEach((t: any) => {
-        if (!timesMap.has(t.course_id)) timesMap.set(t.course_id, []);
-        timesMap.get(t.course_id)!.push({ day: t.day, start_time: t.start_time, end_time: t.end_time });
+        const key = String(t.course_id);
+        if (!timesMap.has(key)) timesMap.set(key, []);
+        timesMap.get(key)!.push({ day: t.day, start_time: t.start_time, end_time: t.end_time });
     });
 
-    return enrollments.map((e: any): Course => {
-        const c = e.courses;
+    return (coursesData as any[]).map((c): Course => {
         const year = parseInt(c.semester?.split('_')[0] ?? '0', 10);
         return {
             id: c.id,
@@ -64,7 +72,7 @@ export async function getSchedule(userId: string): Promise<Course[]> {
             totalSeats: c.total_seats,
             year,
             semester: c.semester,
-            times: timesMap.get(c.id) || [],
+            times: timesMap.get(String(c.id)) || [],
             isLab: c.is_lab,
             isOpen: c.is_open,
             location: c.location,
