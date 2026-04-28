@@ -64,7 +64,6 @@ export default function CourseRowDetails({ course }: CourseRowDetailsProps) {
         ? formatCourseTimes(course.times)
         : "No schedule information available"
     const seats = `${course.openSeats} / ${course.totalSeats} seats available`
-    const courseLabel = `${course.subject} ${course.code}-${course.section}`
     const status = course.isOpen ? "Open" : "Closed"
     const type = course.isLab ? "Lab" : "Lecture"
     const [rateMyProfessorState, setRateMyProfessorState] = useState<RateMyProfessorState>({
@@ -120,15 +119,6 @@ export default function CourseRowDetails({ course }: CourseRowDetailsProps) {
 
     return (
         <div className="space-y-5">
-            <div className="space-y-1">
-                <p className="text-lg font-semibold text-foreground">
-                    {course.name}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                    {courseLabel}
-                </p>
-            </div>
-
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <DetailItem
                     label="Department"
@@ -147,40 +137,24 @@ export default function CourseRowDetails({ course }: CourseRowDetailsProps) {
                     value={type}
                 />
                 <DetailItem
-                    label="Status"
-                    value={status}
+                    label="Instructor"
+                    value={professors}
                 />
                 <DetailItem
                     label="Credits"
                     value={`${course.creditHours} credit hour${course.creditHours === 1 ? "" : "s"}`}
                 />
                 <DetailItem
-                    label="Open Seats"
-                    value={String(course.openSeats)}
-                />
-                <DetailItem
-                    label="Total Seats"
-                    value={String(course.totalSeats)}
-                />
-                <DetailItem
                     label="Seats"
                     value={seats}
                 />
                 <DetailItem
-                    label="Instructor"
-                    value={professors}
+                    label="Location"
+                    value={course.location || "Location TBD"}
                 />
                 <DetailItem
                     label="Semester"
                     value={formatSemester(course.semester)}
-                />
-                <DetailItem
-                    label="Year"
-                    value={String(course.year)}
-                />
-                <DetailItem
-                    label="Location"
-                    value={course.location || "Location TBD"}
                 />
                 <DetailItem
                     label="Schedule"

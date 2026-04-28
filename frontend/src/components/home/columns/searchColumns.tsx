@@ -1,7 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
-import { AlertTriangle, CirclePlus } from "lucide-react"
-import { formatCourseTimes } from "@/lib/utils"
+import { AlertTriangle, CircleMinus, CirclePlus } from "lucide-react"
+import { formatCourseTimes, formatProfessorShort } from "@/lib/utils"
 import type { Course } from "@/lib/types"
 
 interface SearchColumnDeps {
@@ -33,8 +33,8 @@ export function buildSearchColumns(deps: SearchColumnDeps): ColumnDef<Course>[] 
             accessorKey: "subject",
             header: "Dept",
             meta: {
-                headerClassName: "w-16 min-w-16",
-                cellClassName: "w-16 min-w-16",
+                headerClassName: "w-12 min-w-12",
+                cellClassName: "w-12 min-w-12",
             },
             cell: ({ row }) => <Dimmed dimmed={isDimmed(row.original.id)}>{row.original.subject}</Dimmed>,
         },
@@ -42,8 +42,8 @@ export function buildSearchColumns(deps: SearchColumnDeps): ColumnDef<Course>[] 
             accessorKey: "code",
             header: "Code",
             meta: {
-                headerClassName: "w-16 min-w-16",
-                cellClassName: "w-16 min-w-16",
+                headerClassName: "w-12 min-w-12",
+                cellClassName: "w-12 min-w-12",
             },
             cell: ({ row }) => <Dimmed dimmed={isDimmed(row.original.id)}>{row.original.code}</Dimmed>,
         },
@@ -51,8 +51,8 @@ export function buildSearchColumns(deps: SearchColumnDeps): ColumnDef<Course>[] 
             accessorKey: "section",
             header: "Section",
             meta: {
-                headerClassName: "w-[4.5rem] min-w-[4.5rem]",
-                cellClassName: "w-[4.5rem] min-w-[4.5rem]",
+                headerClassName: "w-14 min-w-14",
+                cellClassName: "w-14 min-w-14",
             },
             cell: ({ row }) => <Dimmed dimmed={isDimmed(row.original.id)}>{row.original.section}</Dimmed>,
         },
@@ -66,11 +66,20 @@ export function buildSearchColumns(deps: SearchColumnDeps): ColumnDef<Course>[] 
             cell: ({ row }) => <Dimmed dimmed={isDimmed(row.original.id)}>{row.original.name}</Dimmed>,
         },
         {
+            accessorKey: "creditHours",
+            header: "Credits",
+            meta: {
+                headerClassName: "w-14 min-w-14",
+                cellClassName: "w-14 min-w-14",
+            },
+            cell: ({ row }) => <Dimmed dimmed={isDimmed(row.original.id)}>{row.original.creditHours}</Dimmed>,
+        },
+        {
             accessorKey: "openSeats",
             header: "Open Seats",
             meta: {
-                headerClassName: "w-20 min-w-20",
-                cellClassName: "w-20 min-w-20",
+                headerClassName: "w-14 min-w-14",
+                cellClassName: "w-14 min-w-14",
             },
             cell: ({ row }) => {
                 const noSeats = row.original.openSeats === 0;
@@ -94,8 +103,8 @@ export function buildSearchColumns(deps: SearchColumnDeps): ColumnDef<Course>[] 
             },
             header: "Days & Time",
             meta: {
-                headerClassName: "min-w-48",
-                cellClassName: "min-w-48 max-w-none whitespace-nowrap",
+                headerClassName: "w-40 min-w-40 max-w-40",
+                cellClassName: "w-40 min-w-40 max-w-40 whitespace-normal break-words",
             },
             cell: ({ row }) => {
                 const times = row.original.times;
@@ -104,6 +113,25 @@ export function buildSearchColumns(deps: SearchColumnDeps): ColumnDef<Course>[] 
                 }
                 const text = formatCourseTimes(times, { compactDays: true });
                 return <Dimmed dimmed={isDimmed(row.original.id)}>{text}</Dimmed>;
+            },
+        },
+        {
+            id: "professor",
+            accessorFn: (course) => course.professors
+                .map((p) => formatProfessorShort(p.firstName || p.lastName || ""))
+                .filter(Boolean)
+                .join(", "),
+            header: "Professor",
+            meta: {
+                headerClassName: "min-w-40",
+                cellClassName: "min-w-40 whitespace-nowrap",
+            },
+            cell: ({ row }) => {
+                const text = row.original.professors
+                    .map((p) => formatProfessorShort(p.firstName || p.lastName || ""))
+                    .filter(Boolean)
+                    .join(", ");
+                return <Dimmed dimmed={isDimmed(row.original.id)}>{text || "TBD"}</Dimmed>;
             },
         },
         {
@@ -124,8 +152,15 @@ export function buildSearchColumns(deps: SearchColumnDeps): ColumnDef<Course>[] 
 
                 if (inSchedule) {
                     return (
-                        <Button variant="destructive" size="sm" onClick={() => onRemove(course)}>
-                            Remove
+                        <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            className="h-7 w-7 text-red-600 hover:bg-red-600 hover:text-white"
+                            aria-label="Remove from Schedule"
+                            title="Remove from Schedule"
+                            onClick={() => onRemove(course)}
+                        >
+                            <CircleMinus className="h-4 w-4" />
                         </Button>
                     );
                 }
