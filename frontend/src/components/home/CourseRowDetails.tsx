@@ -145,14 +145,6 @@ export default function CourseRowDetails({ course }: CourseRowDetailsProps) {
                     value={`${course.creditHours} credit hour${course.creditHours === 1 ? "" : "s"}`}
                 />
                 <DetailItem
-                    label="Open Seats"
-                    value={String(course.openSeats)}
-                />
-                <DetailItem
-                    label="Total Seats"
-                    value={String(course.totalSeats)}
-                />
-                <DetailItem
                     label="Seats"
                     value={seats}
                 />
@@ -163,10 +155,6 @@ export default function CourseRowDetails({ course }: CourseRowDetailsProps) {
                 <DetailItem
                     label="Semester"
                     value={formatSemester(course.semester)}
-                />
-                <DetailItem
-                    label="Year"
-                    value={String(course.year)}
                 />
                 <DetailItem
                     label="Location"
