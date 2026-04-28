@@ -103,8 +103,8 @@ export function buildSearchColumns(deps: SearchColumnDeps): ColumnDef<Course>[] 
             },
             header: "Days & Time",
             meta: {
-                headerClassName: "min-w-48",
-                cellClassName: "min-w-48 max-w-none whitespace-nowrap",
+                headerClassName: "w-40 min-w-40 max-w-40",
+                cellClassName: "w-40 min-w-40 max-w-40 whitespace-normal break-words",
             },
             cell: ({ row }) => {
                 const times = row.original.times;
