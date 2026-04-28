@@ -28,6 +28,7 @@ export function buildScheduleColumns(deps: ScheduleColumnDeps): ColumnDef<Course
                 </button>
             ),
         },
+        { accessorKey: "creditHours", header: "Credits" },
         {
             id: "professor",
             accessorFn: (course) => {
