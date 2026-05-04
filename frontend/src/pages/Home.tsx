@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import type { Mode, Course } from "@/lib/types"
 import { supabase } from "@/lib/supabase"
@@ -30,6 +30,19 @@ export default function Home() {
     const [searchParams, setSearchParams] = useState<SearchParams>(null)
     const [hasSearched, setHasSearched] = useState(false)
     const [mode, setMode] = useState<Mode>("search")
+
+    // When the user types a new search after applying filters, remount the
+    // FiltersSidebar so its filter UI resets (otherwise stale filter state
+    // would silently re-activate the next time any filter is touched).
+    const [filtersKey, setFiltersKey] = useState(0)
+    const lastKindRef = useRef<string | null>(null)
+    useEffect(() => {
+        const kind = searchParams?.kind ?? null
+        if (kind === "search" && lastKindRef.current === "filter") {
+            setFiltersKey(k => k + 1)
+        }
+        lastKindRef.current = kind
+    }, [searchParams])
 
     const {
         data,
@@ -162,7 +175,7 @@ export default function Home() {
 
                 {mode === "search" && hasSearched && (
                     <SidebarProvider defaultOpen={true} className="min-h-0">
-                        <FiltersSidebar setSearchParams={setSearchParams} />
+                        <FiltersSidebar key={filtersKey} setSearchParams={setSearchParams} />
                         <div className="fixed top-2 left-2 z-50 transition-[left] duration-200 ease-linear peer-data-[state=expanded]:left-[calc(var(--sidebar-width)+0.5rem)]">
                             <SidebarTrigger />
                         </div>
