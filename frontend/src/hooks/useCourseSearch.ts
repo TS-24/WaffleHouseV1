@@ -10,7 +10,7 @@ import type { Course } from "@/lib/types"
 
 export type SearchParams =
     | { kind: "search"; query: string; semester?: string | null }
-    | { kind: "filter"; filters: FilterParams }
+    | { kind: "filter"; filters: FilterParams; query?: string | null; semester?: string | null }
     | null
 
 export function useCourseSearch(params: SearchParams) {
@@ -23,7 +23,7 @@ export function useCourseSearch(params: SearchParams) {
             if (params!.kind === "search") {
                 return searchCourses(params!.query, opts, params!.semester)
             }
-            return filterCourses(params!.filters, opts)
+            return filterCourses(params!.filters, opts, params!.query, params!.semester)
         },
         getNextPageParam: (lastPage, _all, lastPageParam) =>
             lastPage.hasMore ? lastPageParam + DEFAULT_PAGE_SIZE : undefined,

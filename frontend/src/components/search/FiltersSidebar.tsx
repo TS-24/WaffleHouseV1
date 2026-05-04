@@ -6,7 +6,7 @@
  */
 
 import * as React from "react"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Input } from "@/components/ui/input"
 import {
     Sidebar,
@@ -36,6 +36,10 @@ import type { SearchParams } from "@/hooks/useCourseSearch"
 
 interface FiltersSidebarProps {
     setSearchParams: (params: SearchParams) => void
+    activeSearch: {
+        query: string
+        semester: string | null
+    }
 }
 
 const CREDITS_MIN = 0
@@ -48,7 +52,13 @@ const DAYS: { value: string; label: string }[] = [
     { value: "F", label: "F" },
 ]
 
-function FiltersSidebarInner({ setSearchParams }: FiltersSidebarProps) {
+function FiltersSidebarInner({ setSearchParams, activeSearch }: FiltersSidebarProps) {
+    const activeSearchRef = useRef(activeSearch)
+
+    useEffect(() => {
+        activeSearchRef.current = activeSearch
+    }, [activeSearch])
+
     const [dept, setDept] = useState<string | null>(null)
     const [name, setName] = useState("")
     const [credits, setCredits] = useState<[number, number]>([CREDITS_MIN, CREDITS_MAX])
@@ -99,7 +109,13 @@ function FiltersSidebarInner({ setSearchParams }: FiltersSidebarProps) {
         const isDefault =
             !params.dept && !params.name && !params.credits && !params.prof && !params.time
         if (isDefault) return
-        setSearchParams({ kind: "filter", filters: params })
+        const currentSearch = activeSearchRef.current
+        setSearchParams({
+            kind: "filter",
+            filters: params,
+            query: currentSearch.query,
+            semester: currentSearch.semester,
+        })
     }, [params, setSearchParams])
 
     return (

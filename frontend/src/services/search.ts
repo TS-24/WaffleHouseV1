@@ -171,15 +171,20 @@ export async function fetchFilterOptions(): Promise<{ subjects: string[]; facult
 export async function filterCourses(
     filters: FilterParams,
     opts: PaginationOpts = {},
+    baseQuery?: string | null,
+    semester?: string | null,
 ): Promise<SearchPage> {
     const offset = opts.offset ?? 0;
     const limit = opts.limit ?? DEFAULT_PAGE_SIZE;
 
     try {
         let query = supabase.from('courses').select('*');
+        const trimmedBaseQuery = baseQuery?.trim();
 
+        if (trimmedBaseQuery) query = query.or(`name.ilike.%${trimmedBaseQuery}%,subject.ilike.%${trimmedBaseQuery}%`);
         if (filters.dept)     query = query.eq('subject', filters.dept.toUpperCase());
         if (filters.semester) query = query.eq('semester', filters.semester);
+        else if (semester)    query = query.eq('semester', semester);
         if (filters.credits)  query = query.gte('credits', filters.credits.min).lte('credits', filters.credits.max);
         if (filters.year) {
             const yearStr = parseInt(filters.year, 10).toString();

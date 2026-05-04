@@ -30,6 +30,16 @@ export default function Home() {
     const [searchParams, setSearchParams] = useState<SearchParams>(null)
     const [hasSearched, setHasSearched] = useState(false)
     const [mode, setMode] = useState<Mode>("search")
+    const activeSearchQuery = searchParams?.kind === "search"
+        ? searchParams.query
+        : searchParams?.query ?? ""
+    const activeSearchSemester = searchParams?.kind === "search"
+        ? searchParams.semester ?? null
+        : searchParams?.semester ?? null
+    const activeSearch = useMemo(
+        () => ({ query: activeSearchQuery, semester: activeSearchSemester }),
+        [activeSearchQuery, activeSearchSemester],
+    )
 
     // When the user types a new search after applying filters, remount the
     // FiltersSidebar so its filter UI resets (otherwise stale filter state
@@ -175,7 +185,11 @@ export default function Home() {
 
                 {mode === "search" && hasSearched && (
                     <SidebarProvider defaultOpen={true} className="min-h-0">
-                        <FiltersSidebar key={filtersKey} setSearchParams={setSearchParams} />
+                        <FiltersSidebar
+                            key={filtersKey}
+                            activeSearch={activeSearch}
+                            setSearchParams={setSearchParams}
+                        />
                         <div className="fixed top-2 left-2 z-50 transition-[left] duration-200 ease-linear peer-data-[state=expanded]:left-[calc(var(--sidebar-width)+0.5rem)]">
                             <SidebarTrigger />
                         </div>
